@@ -1,0 +1,33 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "outputs": {
+        "vNetPrivateSubnetId": {
+            "type": "string",
+            "value": "[variables('vNetPrivateSubnetRef')]"
+        }
+    },
+    "parameters": {
+        "vNetAddressPrefix": {
+            "type": "string"
+        },
+        "vNetName": {
+            "type": "string"
+        },
+        "vNetPrivateAddressPrefix": {
+            "type": "string"
+        },
+        "vNetPrivateSubnetName": {
+            "type": "string"
+        },
+        "vNetResourceGroup": {
+            "type": "string"
+        }
+    },
+    "resources": [
+    ],
+    "variables": {
+        "vNetID"              : "[resourceId(parameters('vNetResourceGroup'),'Microsoft.Network/virtualNetworks',parameters('vNetName'))]",
+        "vNetPrivateSubnetRef": "[concat(variables('vNetID'),'/subnets/',parameters('vNetPrivateSubnetName'))]"
+    }
+}
