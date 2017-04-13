@@ -43,7 +43,7 @@
         "subnetPrefix": {
             "type": "string"
         },
-        "networkSpec":{
+        "networkSpec": {
             "type": "object"
         }
     },
@@ -159,7 +159,8 @@
             "location": "[resourceGroup().location]",
             "apiVersion": "[parameters('computeApiVersion')]",
             "dependsOn": [
-                "Microsoft.Resources/deployments/networkTemplate"
+                "[concat('Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName)]",
+                "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
             ],
             "sku": {
                 "name": "Standard_A1",
