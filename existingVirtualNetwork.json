@@ -1,0 +1,125 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.1",
+    "parameters": {
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "clusterName": {
+            "type": "string"
+        },
+        "clusterSize": {
+            "type": "int"
+        },
+        "vmSKU":{
+            "type": "string"
+        },
+        "sizeOfDataDiskInGB": {
+            "type": "int"
+        },
+        "publicIPAddressName": {
+            "type": "string",
+            "defaultValue": "[concat(toLower(parameters('clusterName')),'-pip')]"
+        },
+        "loadBalancerName": {
+            "type": "string",
+            "defaultValue": "[concat(toLower(parameters('clusterName')),'-lb')]"
+        },
+        "resourceApiVersion": {
+            "type": "string"
+        },
+        "networkApiVersion": {
+            "type": "string"
+        },
+        "computeApiVersion": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "addressPrefix": {
+            "type": "string"
+        },
+        "virtualNetworkSubnetName": {
+            "type": "string"
+        },
+        "subnetPrefix": {
+            "type": "string"
+        },
+        "existingVnetId":{
+            "type": "string"
+        }
+    },
+    "variables": {
+       
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "name": "[parameters('clusterName')]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[parameters('computeApiVersion')]",
+            "dependsOn": [],
+            "sku": {
+                "name": "[parameters('vmSKU')]",
+                "capacity": "[parameters('clusterSize')]"
+            },
+            "properties": {
+                "overprovision": false,
+                "singlePlacementGroup": true,
+                "upgradePolicy": {
+                    "mode": "Manual"
+                },
+                "virtualMachineProfile": {
+                    "storageProfile": {
+                        "osDisk": {
+                            "caching": "ReadOnly",
+                            "createOption": "FromImage"
+                        },
+                        "dataDisks": [
+                            {
+                                "diskSizeGB": "[parameters('sizeOfDataDiskInGB')]",
+                                "lun": 0,
+                                "createOption": "Empty"
+                            }
+                        ],
+                        "imageReference": {
+                            "publisher": "Canonical",
+                            "offer": "UbuntuServer",
+                            "sku": "16.04-LTS",
+                            "version": "latest"
+                        }
+                    },
+                    "osProfile": {
+                        "computerNamePrefix": "vm",
+                        "adminUsername": "[parameters('adminUsername')]",
+                        "adminPassword": "[parameters('adminPassword')]"
+                    },
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[parameters('virtualNetworkName')]",
+                                "properties": {
+                                    "primary": true,
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "myIpConfig",
+                                            "properties": {
+                                                "subnet": {
+                                                    "id": "[concat( parameters('existingVnetId'), '/subnets/',parameters('virtualNetworkSubnetName'))]"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
