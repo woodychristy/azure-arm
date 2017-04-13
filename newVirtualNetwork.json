@@ -11,6 +11,12 @@
         "clusterName": {
             "type": "string"
         },
+        "clusterSize": {
+            "type": "int"
+        },
+        "vmSKU":{
+            "type": "string"
+        },
         "sizeOfDataDiskInGB": {
             "type": "int"
         },
@@ -163,8 +169,8 @@
                 "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
             ],
             "sku": {
-                "name": "Standard_A1",
-                "capacity": 6
+                "name":  "[parameters('vmSKU')]",
+                "capacity": "[parameters('clusterSize')]"
             },
             "properties": {
                 "overprovision": false,
