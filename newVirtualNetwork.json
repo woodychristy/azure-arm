@@ -1,0 +1,233 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.1",
+    "parameters": {
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "clusterName": {
+            "type": "string"
+        },
+        "sizeOfDataDiskInGB": {
+            "type": "int"
+        },
+        "publicIPAddressName": {
+            "type": "string",
+            "defaultValue": "[concat(toLower(parameters('clusterName')),'-pip')]"
+        },
+        "loadBalancerName": {
+            "type": "string",
+            "defaultValue": "[concat(toLower(parameters('clusterName')),'-lb')]"
+        },
+        "resourceApiVersion": {
+            "type": "string"
+        },
+        "networkApiVersion": {
+            "type": "string"
+        },
+        "computeApiVersion": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "addressPrefix": {
+            "type": "string"
+        },
+        "virtualNetworkSubnetName": {
+            "type": "string"
+        },
+        "subnetPrefix": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "namingInfix": "[toLower(substring(concat(parameters('clusterName'), uniqueString(resourceGroup().id)), 0, 9))]",
+        "longNamingInfix": "[toLower(parameters('clusterName'))]",
+        "networkSpec": {
+            "publicIPAddressName": "[parameters('publicIPAddressName')]",
+            "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName'))]",
+            "frontEndIPConfigID": "[concat(resourceId('Microsoft.Network/loadBalancers',parameters('loadBalancerName')),'/frontendIPConfigurations/loadBalancerFrontEnd')]",
+            "loadBalancerName": "[parameters('loadBalancerName')]",
+            "lbID": "[resourceId('Microsoft.Network/loadBalancers',parameters('loadBalancerName'))]",
+            "bePoolName": "[concat(variables('namingInfix'), 'bepool')]",
+            "sshNatPoolName": "[concat(variables('namingInfix'), 'sshNatPool')]",
+            "sshNatStartPort": 50000,
+            "sshNatEndPort": 50119,
+            "sshNatBackEndPort": 22,
+            "adminUiNatPoolName": "[concat(variables('namingInfix'), 'adminUiNatPool')]",
+            "adminUiStartPort": 51000,
+            "adminUiEndPort": 51119,
+            "adminUiBackEndPort": 8080
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "[parameters('resourceAPIVersion')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('virtualNetworkName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('virtualNetworkSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('networkSpec').publicIPAddressName]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[parameters('networkApiVersion')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('longNamingInfix')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('networkSpec').loadBalancerName]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[parameters('networkApiVersion')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('networkSpec').publicIPAddressName)]"
+            ],
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LoadBalancerFrontEnd",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[variables('networkSpec').publicIPAddressID]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('networkSpec').bePoolName]"
+                    }
+                ],
+                "inboundNatPools": [
+                    {
+                        "name": "[variables('networkSpec').sshNatPoolName]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('networkSpec').frontEndIPConfigID]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPortRangeStart": "[variables('networkSpec').sshNatStartPort]",
+                            "frontendPortRangeEnd": "[variables('networkSpec').sshNatEndPort]",
+                            "backendPort": "[variables('networkSpec').sshNatBackEndPort]"
+                        }
+                    },
+                    {
+                        "name": "[variables('networkSpec').adminUiNatPoolName]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('networkSpec').frontEndIPConfigID]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPortRangeStart": "[variables('networkSpec').adminUiStartPort]",
+                            "frontendPortRangeEnd": "[variables('networkSpec').adminUiEndPort]",
+                            "backendPort": "[variables('networkSpec').adminUiBackEndPort]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "name": "[parameters('clusterName')]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "[parameters('computeApiVersion')]",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/networkTemplate"
+            ],
+            "sku": {
+                "name": "Standard_A1",
+                "capacity": 6
+            },
+            "properties": {
+                "overprovision": false,
+                "singlePlacementGroup": true,
+                "upgradePolicy": {
+                    "mode": "Manual"
+                },
+                "virtualMachineProfile": {
+                    "storageProfile": {
+                        "osDisk": {
+                            "caching": "ReadOnly",
+                            "createOption": "FromImage"
+                        },
+                        "dataDisks": [
+                            {
+                                "diskSizeGB": "[parameters('sizeOfDataDiskInGB')]",
+                                "lun": 0,
+                                "createOption": "Empty"
+                            }
+                        ],
+                        "imageReference": {
+                            "publisher": "Canonical",
+                            "offer": "UbuntuServer",
+                            "sku": "16.04-LTS",
+                            "version": "latest"
+                        }
+                    },
+                    "osProfile": {
+                        "computerNamePrefix": "vm",
+                        "adminUsername": "[parameters('adminUsername')]",
+                        "adminPassword": "[parameters('adminPassword')]"
+                    },
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[parameters('virtualNetworkName')]",
+                                "properties": {
+                                    "primary": true,
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "myIpConfig",
+                                            "properties": {
+                                                "subnet": {
+                                                    "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/mySubnet')]"
+                                                },
+                                                "loadBalancerBackendAddressPools": [
+                                                    {
+                                                        "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/backendAddressPools/', variables('networkSpec').bePoolName)]"
+                                                    }
+                                                ],
+                                                "loadBalancerInboundNatPools": [
+                                                    {
+                                                        "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').sshNatPoolName)]"
+                                                    },
+                                                    {
+                                                        "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').adminUiNatPoolName)]"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
