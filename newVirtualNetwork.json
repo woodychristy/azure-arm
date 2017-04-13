@@ -48,9 +48,6 @@
         },
         "subnetPrefix": {
             "type": "string"
-        },
-        "networkSpec": {
-            "type": "object"
         }
     },
     "variables": {
