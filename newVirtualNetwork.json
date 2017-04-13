@@ -208,7 +208,7 @@
                                             "name": "myIpConfig",
                                             "properties": {
                                                 "subnet": {
-                                                    "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/mySubnet')]"
+                                                    "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName')), '/subnets/',parameters('virtualNetworkSubnetName'))]"
                                                 },
                                                 "loadBalancerBackendAddressPools": [
                                                     {
