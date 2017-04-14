@@ -211,7 +211,7 @@
             "addressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
             "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetwork.name]",
             "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
-            "vNetPrivateAddressPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
+            "subnetPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
             "vNetPrivateSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
             "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]"
         }
