@@ -208,10 +208,10 @@
             "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
             "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
             "sizeOfDataDiskInGB":"[steps('clusterSettingsStep').sizeOfDataDiskInGB]",
-            "addressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.addressPrefix]",
+            "addressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.addressPrefixSize]",
             "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",
             "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
-            "vNetPrivateAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.privateSubnet.addressPrefix]",
+            "vNetPrivateAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.privateSubnet.addressPrefixSize]",
             "vNetPrivateSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.privateSubnet.name]",
             "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.resourceGroup]"
         }
