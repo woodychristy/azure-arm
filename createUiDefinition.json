@@ -201,9 +201,9 @@
         ],
         "outputs": {
             "adminUsername": "[basics('adminUsername')]",
-            "adminPassword": "[basics('SSHCredntials').password]",
-            "authenticationType": "[basics('SSHCredntials').authenticationType]",
-            "sshPublicKey": "[basics('SSHCredntials').sshPublicKey]",
+            "adminPassword": "[basics('adminCredentials').password]",
+            "authenticationType": "[basics('adminCredentials').authenticationType]",
+            "sshPublicKey": "[basics('adminCredentials').sshPublicKey]",
             "clusterName": "[steps('clusterSettingsStep').clusterName]",
             "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
             "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
