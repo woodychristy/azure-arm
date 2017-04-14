@@ -41,13 +41,19 @@
             "type": "string"
         },
         "addressPrefix": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description":"This is only needed to align the same parameters to new vnet template"
+            }
         },
         "virtualNetworkSubnetName": {
             "type": "string"
         },
         "subnetPrefix": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description":"This is only needed to align the same parameters to new vnet template"
+            }
         },
         "existingVnetId":{
             "type": "string"

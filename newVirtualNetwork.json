@@ -48,11 +48,16 @@
         },
         "subnetPrefix": {
             "type": "string"
+        },
+        "existingVnetId":{
+            "type": "string",
+            "metadata": {
+                "description":"This is only needed to align the same parameters to existing vnet"
+            }
         }
     },
     "variables": {
         "namingInfix": "[toLower(substring(concat(parameters('clusterName'), uniqueString(resourceGroup().id)), 0, 9))]",
-        "longNamingInfix": "[toLower(parameters('clusterName'))]",
         "networkSpec": {
             "publicIPAddressName": "[parameters('publicIPAddressName')]",
             "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName'))]",
