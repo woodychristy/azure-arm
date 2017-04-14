@@ -1,0 +1,219 @@
+{
+    "handler": "Microsoft.Compute.MultiVm",
+    "version": "0.0.1-preview",
+    "parameters": {
+        "basics": [
+            {
+                "name": "adminUsername",
+                "type": "Microsoft.Compute.UserNameTextBox",
+                "label": "Admin user name",
+                "defaultValue": "",
+                "toolTip": "Specify a user for accessing the virtual machines within your cluster.",
+                "osPlatform": "Linux",
+                "constraints": {
+                    "required": true
+                }
+            },
+            {
+                "name": "adminCredentials",
+                "type": "Microsoft.Compute.CredentialsCombo",
+                "label": {
+                    "authenticationType": "Authentication type",
+                    "password": "Password",
+                    "confirmPassword": "Confirm password",
+                    "sshPublicKey": "SSH public key"
+                },
+                "toolTip": {
+                    "authenticationType": "Choose Authentication type Password or PublicKey(SSH).",
+                    "password": "Enter the password for the specified user name.",
+                    "sshPublicKey": "Copy Public key into field."
+                },
+                "constraints": {
+                    "required": true
+                },
+                "options": {
+                    "hideConfirmation": false
+                },
+                "osPlatform": "Linux"
+            }
+        ],
+        "steps": [
+            {
+                "name": "clusterSettingsStep",
+                "label": "Kinetica GPUDB Cluster Provisioning",
+                "subLabel": {
+                    "preValidation": "Configure the Kinetica GPUDB cluster settings",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Kinetica GPUDB Cluster Provisioning",
+                "elements": [
+                    {
+                        "name": "clusterName",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Name of cluster",
+                        "defaultValue": "",
+                        "toolTip": "A unique namespace for this cluster.  All resources will be labeled with this name as a prefix",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[0-9a-zA-Z][0-9a-zA-Z-]{2,10}$",
+                            "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
+                        }
+                    },
+                    {
+                        "name": "clusterNodeCount",
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Cluster size",
+                        "defaultValue": "1",
+                        "toolTip": "The number of virtual machines (nodes) to provision for the cluster.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "1",
+                                    "value": 1
+                                },
+                                {
+                                    "label": "2",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "3",
+                                    "value": 3
+                                },
+                                {
+                                    "label": "4",
+                                    "value": 4
+                                },
+                                {
+                                    "label": "5",
+                                    "value": 5
+                                },
+                                {
+                                    "label": "6",
+                                    "value": 6
+                                },
+                                {
+                                    "label": "7",
+                                    "value": 7
+                                },
+                                {
+                                    "label": "8",
+                                    "value": 8
+                                },
+                                {
+                                    "label": "9",
+                                    "value": 9
+                                },
+                                {
+                                    "label": "10",
+                                    "value": 10
+                                },
+                                {
+                                    "label": "12",
+                                    "value": 12
+                                },
+                                {
+                                    "label": "14",
+                                    "value": 14
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "clusterVmSize",
+                        "type": "Microsoft.Compute.SizeSelector",
+                        "label": "Virtual machine size",
+                        "toolTip": "The size of virtual machine to provision.",
+                        "recommendedSizes": [
+                            "Standard_NC6",
+                            "Standard_NC12",
+                            "Standard_NC24"
+                        ],
+                        "constraints": {
+                            "allowedSizes": [
+                                "Standard_NC6",
+                                "Standard_NC12",
+                                "Standard_NC24"
+                            ]
+                        },
+                        "osPlatform": "Linux"
+                    },
+                    {
+                        "name": "sizeOfDataDiskInGB",
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Data Disk Size Per Node",
+                        "defaultValue": "1024",
+                        "toolTip": "The size of the data disk used for data storage attached to the virtual machine.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "128 GB",
+                                    "value": 128
+                                },
+                                {
+                                    "label": "256 GB",
+                                    "value": 2
+                                },
+                                {
+                                    "label": "512 GB",
+                                    "value": 3
+                                },
+                                {
+                                    "label": "1 TB",
+                                    "value": 1024
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "virtualNetwork",
+                        "type": "Microsoft.Network.VirtualNetworkCombo",
+                        "label": {
+                            "virtualNetwork": "Virtual network",
+                            "subnets": "Subnets"
+                        },
+                        "toolTip": {
+                            "virtualNetwork": "Virtual Network Name",
+                            "subnets": "Subnets requied for Kinetica GPUDB"
+                        },
+                        "defaultValue": {
+                            "name": "gpudb-vnet",
+                            "addressPrefixSize": "/28"
+                        },
+                        "constraints": {
+                            "minAddressPrefixSize": "/28"
+                        },
+                        "options": {
+                            "hideExisting": false
+                        },
+                        "subnets": {
+                            "privateSubnet": {
+                                "label": "Subnet Information",
+                                "constraints": {
+                                    "minAddressPrefixSize": "/28",
+                                    "minAddressCount": 1,
+                                    "requireContiguousAddresses": false
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "outputs": {
+            "adminUsername": "[basics('adminUsername')]",
+            "adminPassword": "[basics('SSHCredntials').password]",
+            "authenticationType": "[basics('SSHCredntials').authenticationType]",
+            "sshPublicKey": "[basics('SSHCredntials').sshPublicKey]",
+            "clusterName": "[steps('clusterSettingsStep').clusterName]",
+            "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
+            "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
+            "sizeOfDataDiskInGB":"[steps('clusterSettingsStep').sizeOfDataDiskInGB]",
+            "addressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.addressPrefix]",
+            "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.name]",
+            "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
+            "vNetPrivateAddressPrefix": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.privateSubnet.addressPrefix]",
+            "vNetPrivateSubnetName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.subnets.privateSubnet.name]",
+            "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetworkConfiguration.virtualNetwork.resourceGroup]"
+        }
+    }
+}
