@@ -18,18 +18,16 @@
                 "name": "adminCredentials",
                 "type": "Microsoft.Compute.CredentialsCombo",
                 "label": {
-                    "authenticationType": "Authentication type",
                     "password": "Password",
-                    "confirmPassword": "Confirm password",
-                    "sshPublicKey": "SSH public key"
+                    "confirmPassword": "Confirm password"
                 },
                 "toolTip": {
-                    "authenticationType": "Choose Authentication type Password or PublicKey(SSH).",
-                    "password": "Enter the password for the specified user name.",
-                    "sshPublicKey": "Copy Public key into field."
+                    "password": "Enter the password for the specified user name."
+
                 },
                 "constraints": {
                     "required": true
+
                 },
                 "options": {
                     "hideConfirmation": false
@@ -202,8 +200,6 @@
         "outputs": {
             "adminUsername": "[basics('adminUsername')]",
             "adminPassword": "[basics('adminCredentials').password]",
-            "authenticationType": "[basics('adminCredentials').authenticationType]",
-            "sshPublicKey": "[basics('adminCredentials').sshPublicKey]",
             "clusterName": "[steps('clusterSettingsStep').clusterName]",
             "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
             "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
@@ -212,7 +208,7 @@
             "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetwork.name]",
             "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
             "subnetPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
-            "vNetPrivateSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
+            "virtualNetworkSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
             "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]"
         }
     }
