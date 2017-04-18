@@ -23,16 +23,14 @@
                 },
                 "toolTip": {
                     "password": "Enter the password for the specified user name."
-
                 },
                 "constraints": {
                     "required": true
-
                 },
                 "options": {
                     "hideConfirmation": false
                 },
-                "osPlatform": "Linux"
+                "osPlatform": "Windows"
             }
         ],
         "steps": [
@@ -203,7 +201,7 @@
             "clusterName": "[steps('clusterSettingsStep').clusterName]",
             "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
             "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
-            "sizeOfDataDiskInGB":"[steps('clusterSettingsStep').sizeOfDataDiskInGB]",
+            "sizeOfDataDiskInGB": "[steps('clusterSettingsStep').sizeOfDataDiskInGB]",
             "addressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
             "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetwork.name]",
             "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
