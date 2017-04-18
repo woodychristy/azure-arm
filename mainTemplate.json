@@ -1,0 +1,137 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "clusterName": {
+            "type": "string"
+        },
+        "clusterSize": {
+            "type": "int",
+            "minValue": 1,
+            "maxValue": 100
+        },
+        "vmSKU": {
+            "type": "string"
+        },
+        "sizeOfDataDiskInGB": {
+            "type": "int",
+            "allowedValues": [
+                128,
+                256,
+                512,
+                1024
+            ]
+        },
+        "vnetNewOrExisting": {
+            "type": "string",
+            "allowedValues": [
+                "new",
+                "existing"
+            ]
+        },
+        "publicIPAddressName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('clusterName'),'-pip')]"
+        },
+        "existingNetworkRGName": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('clusterName'),'-net')]"
+        },
+        "virtualNetworkSubnetName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('clusterName'),'-sub')]"
+        },
+        "loadBalancerName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('clusterName'),'-lb')]"
+        },
+        "addressPrefix": {
+            "type": "string"
+        },
+        "subnetPrefix": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "computeApiVersion": "2016-04-30-preview",
+        "networkApiVersion": "2016-03-30",
+        "storageApiVersion": "2015-06-15",
+        "resourceApiVersion": "2015-06-15",
+        "templateBaseUri": ".",
+        "vmssTemplateUri": "[concat(variables('templateBaseUri'),'/',parameters('vnetNewOrExisting'),'VirtualNetwork.json')]",
+        "existingVnetId": "[resourceId(parameters('existingNetworkRGName'),concat('Microsoft.Network','/','virtualNetworks'),parameters('virtualNetworkName'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "vmssTemplate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('vmssTemplateUri')]",
+                    "contentVersion": "1.0.0.2"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "clusterName": {
+                        "value": "[parameters('clusterName')]"
+                    },
+                    "clusterSize": {
+                        "value": "[parameters('clusterSize')]"
+                    },
+                    "vmSKU": {
+                        "value": "[parameters('vmSKU')]"
+                    },
+                    "sizeOfDataDiskInGB": {
+                        "value": "[parameters('sizeOfDataDiskInGB')]"
+                    },
+                    "publicIPAddressName": {
+                        "value": "[parameters('publicIPAddressName')]"
+                    },
+                    "loadBalancerName": {
+                        "value": "[parameters('loadBalancerName')]"
+                    },
+                    "resourceApiVersion": {
+                        "value": "[variables('resourceApiVersion')]"
+                    },
+                    "networkApiVersion": {
+                        "value": "[variables('networkApiVersion')]"
+                    },
+                    "computeApiVersion": {
+                        "value": "[variables('computeApiVersion')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "addressPrefix": {
+                        "value": "[parameters('addressPrefix')]"
+                    },
+                    "virtualNetworkSubnetName": {
+                        "value": "[parameters('virtualNetworkSubnetName')]"
+                    },
+                    "subnetPrefix": {
+                        "value": "[parameters('subnetPrefix')]"
+                    },
+                    "existingVnetId": {
+                        "value": "[variables('existingVnetId')]"
+                    }
+                }
+            }
+        }
+    ]
+}
