@@ -196,14 +196,10 @@
                         "name": "dnsAndPublicIP",
                         "type": "Microsoft.Network.PublicIpAddressCombo",
                         "label": {
-                            "publicIpAddress": "Public IP address",
                             "domainNameLabel": "DNS Prefix"
                         },
                         "toolTip": {
                             "domainNameLabel": "DNS Prefix for the Load Balancer public IP addresses.  Only needed if using a new network."
-                        },
-                        "defaultValue": {
-                            "publicIpAddressName": "publicIP"
                         },
                         "options": {
                             "hideNone": true
