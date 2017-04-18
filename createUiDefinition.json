@@ -237,7 +237,7 @@
             "subnetPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
             "virtualNetworkSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
             "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]",
-            "publicIPAddressName": "[steps('infrastructureConfig').dnsAndPublicIP.domainNameLabel]",
+            "publicIPAddressName": "[steps('clusterSettingsStep').dnsAndPublicIP.domainNameLabel]",
             "loadBalancerName": "[steps('clusterSettingsStep').loadBalancerName]"
         }
     }
