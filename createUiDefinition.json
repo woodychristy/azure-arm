@@ -220,7 +220,7 @@
                             "regex": "^[0-9a-zA-Z][0-9a-zA-Z-]{2,10}$",
                             "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
                         }
-                    },
+                    }
                 ]
             }
         ],
