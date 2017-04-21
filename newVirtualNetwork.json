@@ -14,7 +14,7 @@
         "clusterSize": {
             "type": "int"
         },
-        "vmSKU":{
+        "vmSKU": {
             "type": "string"
         },
         "sizeOfDataDiskInGB": {
@@ -49,10 +49,10 @@
         "subnetPrefix": {
             "type": "string"
         },
-        "existingVnetId":{
+        "existingVnetId": {
             "type": "string",
             "metadata": {
-                "description":"This is only needed to align the same parameters to existing vnet"
+                "description": "This is only needed to align the same parameters to existing vnet"
             }
         }
     },
@@ -67,12 +67,16 @@
             "bePoolName": "[concat(variables('namingInfix'), 'bepool')]",
             "sshNatPoolName": "[concat(variables('namingInfix'), 'sshNatPool')]",
             "sshNatStartPort": 50000,
-            "sshNatEndPort": 50119,
+            "sshNatEndPort": 50099,
             "sshNatBackEndPort": 22,
             "adminUiNatPoolName": "[concat(variables('namingInfix'), 'adminUiNatPool')]",
-            "adminUiStartPort": 51000,
-            "adminUiEndPort": 51119,
-            "adminUiBackEndPort": 8080
+            "adminUiStartPort": 50100,
+            "adminUiEndPort": 50199,
+            "adminUiBackEndPort": 8080,
+            "authenticatedApiNatPoolName": "[concat(variables('namingInfix'), 'authenticatedApiNatPool')]",
+            "authenticatedApiStartPort": 50200,
+            "authenticatedApiEndPort": 50299,
+            "authenticatedApiBackEndPort": 8082
         }
     },
     "resources": [
@@ -156,6 +160,17 @@
                             "frontendPortRangeStart": "[variables('networkSpec').adminUiStartPort]",
                             "frontendPortRangeEnd": "[variables('networkSpec').adminUiEndPort]",
                             "backendPort": "[variables('networkSpec').adminUiBackEndPort]"
+                        }},
+                    {
+                        "name": "[variables('networkSpec').authenticatedApiNatPoolName]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('networkSpec').frontEndIPConfigID]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPortRangeStart": "[variables('networkSpec').authenticatedApiStartPort]",
+                            "frontendPortRangeEnd": "[variables('networkSpec').authenticatedApiEndPort]",
+                            "backendPort": "[variables('networkSpec').authenticatedApiBackEndPort]"
                         }
                     }
                 ]
@@ -171,7 +186,7 @@
                 "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
             ],
             "sku": {
-                "name":  "[parameters('vmSKU')]",
+                "name": "[parameters('vmSKU')]",
                 "capacity": "[parameters('clusterSize')]"
             },
             "properties": {
@@ -229,6 +244,9 @@
                                                     },
                                                     {
                                                         "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').adminUiNatPoolName)]"
+                                                    },
+                                                    {
+                                                        "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').authenticatedApiNatPoolName)]"
                                                     }
                                                 ]
                                             }
