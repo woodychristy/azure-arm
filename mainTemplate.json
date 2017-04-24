@@ -131,6 +131,9 @@
                     
                     "existingVnetId": {
                         "value": "[variables('existingVnetId')]"
+                    },
+                    "scriptsUri":{
+                        "value": "[variables('scriptsUri')]"
                     }
                 }
             }

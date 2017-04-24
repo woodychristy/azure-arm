@@ -81,7 +81,7 @@
             "authenticatedApiEndPort": 50299,
             "authenticatedApiBackEndPort": 8082
         },
-        "prepareDisks": "[concat( parameters('scriptsUri'), 'prepareDisks.sh')]"
+        "prepareDrives": "[concat( parameters('scriptsUri'), 'prepareDrives.sh')]"
     },
     "resources": [
         {
@@ -264,12 +264,12 @@
                     "extensionProfile": {
                         "extensions": [
                             {
-                                "name": "prepareDisks",
+                                "name": "prepareDrives",
                                 "properties": {
                                     "publisher": "Microsoft.Azure.Extensions",
                                     "settings": {
-                                        "fileUris": ["[variables('prepareDisks')]"],
-                                        "commandToExecute":"sh prepareDisks.sh"
+                                        "fileUris": ["[variables('prepareDrives')]"],
+                                        "commandToExecute":"sh prepareDrives.sh"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion":true,
