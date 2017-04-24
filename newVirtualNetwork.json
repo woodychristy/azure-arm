@@ -54,6 +54,9 @@
             "metadata": {
                 "description": "This is only needed to align the same parameters to existing vnet"
             }
+        },
+        "scriptsUri": {
+            "type": "string"
         }
     },
     "variables": {
@@ -77,7 +80,8 @@
             "authenticatedApiStartPort": 50200,
             "authenticatedApiEndPort": 50299,
             "authenticatedApiBackEndPort": 8082
-        }
+        },
+        "prepareDisks":"[concat( parameters('scriptsUri'), 'prepareDisks.sh')]"
     },
     "resources": [
         {
@@ -160,7 +164,8 @@
                             "frontendPortRangeStart": "[variables('networkSpec').adminUiStartPort]",
                             "frontendPortRangeEnd": "[variables('networkSpec').adminUiEndPort]",
                             "backendPort": "[variables('networkSpec').adminUiBackEndPort]"
-                        }},
+                        }
+                    },
                     {
                         "name": "[variables('networkSpec').authenticatedApiNatPoolName]",
                         "properties": {
@@ -216,7 +221,7 @@
                         }
                     },
                     "osProfile": {
-                        "computerNamePrefix": "vm",
+                        "computerNamePrefix": "[parameters('clusterName')]",
                         "adminUsername": "[parameters('adminUsername')]",
                         "adminPassword": "[parameters('adminPassword')]"
                     },

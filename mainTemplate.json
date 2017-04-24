@@ -66,8 +66,9 @@
         "networkApiVersion": "2016-03-30",
         "storageApiVersion": "2015-06-15",
         "resourceApiVersion": "2015-06-15",
-        "templateBaseUri": ".",
+        "templateBaseUri": "https://raw.githubusercontent.com/woodychristy/azure-arm/master",
         "vmssTemplateUri": "[concat(variables('templateBaseUri'),'/',parameters('vnetNewOrExisting'),'VirtualNetwork.json')]",
+        "scriptsUri": "[concat(variables('templateBaseUri'),'/scripts/')]",
         "existingVnetId": "[resourceId(parameters('existingNetworkRGName'),concat('Microsoft.Network','/','virtualNetworks'),parameters('virtualNetworkName'))]"
     },
     "resources": [
@@ -127,6 +128,7 @@
                     "subnetPrefix": {
                         "value": "[parameters('subnetPrefix')]"
                     },
+                    
                     "existingVnetId": {
                         "value": "[variables('existingVnetId')]"
                     }

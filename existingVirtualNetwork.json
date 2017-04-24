@@ -57,10 +57,13 @@
         },
         "existingVnetId":{
             "type": "string"
+        },
+        "scriptsUri": {
+            "type": "string"
         }
     },
     "variables": {
-       
+       "prepareDisks":"[concat( parameters('scriptsUri'), 'prepareDisks.sh')]"
     },
     "resources": [
         {
@@ -100,7 +103,7 @@
                         }
                     },
                     "osProfile": {
-                        "computerNamePrefix": "vm",
+                        "computerNamePrefix": "[parameters('clusterName')]",
                         "adminUsername": "[parameters('adminUsername')]",
                         "adminPassword": "[parameters('adminPassword')]"
                     },
@@ -128,4 +131,4 @@
             }
         }
     ]
-}
+ }
