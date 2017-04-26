@@ -79,7 +79,11 @@
             "authenticatedApiNatPoolName": "[concat(variables('namingInfix'), 'authenticatedApiNatPool')]",
             "authenticatedApiStartPort": 50200,
             "authenticatedApiEndPort": 50299,
-            "authenticatedApiBackEndPort": 8082
+            "authenticatedApiBackEndPort": 8082,
+            "revealNatPoolName": "[concat(variables('namingInfix'), 'revealNatPool')]",
+            "revealStartPort": 50300,
+            "revealEndPort": 50399,
+            "revealBackEndPort": 8088
         },
         "prepareDrives": "[concat( parameters('scriptsUri'), 'prepareDrives.sh')]"
     },
@@ -177,6 +181,20 @@
                             "frontendPortRangeEnd": "[variables('networkSpec').authenticatedApiEndPort]",
                             "backendPort": "[variables('networkSpec').authenticatedApiBackEndPort]"
                         }
+                        
+                    },
+                    {
+                        "name": "[variables('networkSpec').revealNatPoolName]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('networkSpec').frontEndIPConfigID]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPortRangeStart": "[variables('networkSpec').revealStartPort]",
+                            "frontendPortRangeEnd": "[variables('networkSpec').revealEndPort]",
+                            "backendPort": "[variables('networkSpec').revealBackEndPort]"
+                        }
+                        
                     }
                 ]
             }
@@ -249,6 +267,9 @@
                                                     },
                                                     {
                                                         "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').authenticatedApiNatPoolName)]"
+                                                    },
+                                                    {
+                                                        "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').revealNatPoolName)]"
                                                     }
                                                 ]
                                             }
