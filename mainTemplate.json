@@ -138,5 +138,11 @@
                 }
             }
         }
-    ]
+    ],
+    "outputs": {
+        "firstNodeIP":{
+"type": "string","value": "[reference('vmssTemplate').firstVMIP.value]"
+
+        }
+    }
 }
