@@ -305,7 +305,7 @@
     "outputs": {
         "firstVMIP":{
             "type": "string",
-            "value":"[reference(concat('Microsoft.Compute/virtualMachineScaleSets/',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName'),'/ipConfigurations/myIpConfig'),parameters('computeApiVersion')).ipConfigurations[0].properties.privateIPaddress]"
+            "value":"[reference(concat('Microsoft.Compute/virtualMachineScaleSets/',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName')),parameters('computeApiVersion')).ipConfigurations[0].properties.privateIPaddress]"
         }
     }
 }
