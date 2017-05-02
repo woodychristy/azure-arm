@@ -63,7 +63,7 @@
         }
     },
     "variables": {
-       "prepareDisks":"[concat( parameters('scriptsUri'), 'prepareDisks.sh')]"
+       "prepareDrives":"[concat( parameters('scriptsUri'), 'prepareDisks.sh')]"
     },
     "resources": [
         {
@@ -123,6 +123,23 @@
                                             }
                                         }
                                     ]
+                                }
+                            }
+                        ]
+                    },
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "prepareDrives",
+                                "properties": {
+                                    "publisher": "Microsoft.Azure.Extensions",
+                                    "settings": {
+                                        "fileUris": ["[variables('prepareDrives')]"],
+                                        "commandToExecute":"sh prepareDrives.sh"
+                                    },
+                                    "typeHandlerVersion": "2.0",
+                                    "autoUpgradeMinorVersion":true,
+                                    "type": "CustomScript"
                                 }
                             }
                         ]

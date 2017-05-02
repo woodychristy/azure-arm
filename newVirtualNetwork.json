@@ -85,7 +85,9 @@
             "revealEndPort": 50399,
             "revealBackEndPort": 8088
         },
-        "prepareDrives": "[concat( parameters('scriptsUri'), 'prepareDrives.sh')]"
+        "prepareDrives": "[concat( parameters('scriptsUri'), 'prepareDrives.sh')]",
+        "logInToMaster": "[concat( parameters('scriptsUri'), 'loginToMaster.sh')]",
+        "firstVMNIC": "[concat('Microsoft.Compute/virtualMachineScaleSets',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName'),'/ipConfigurations/myIpConfig')]"
     },
     "resources": [
         {
@@ -181,7 +183,6 @@
                             "frontendPortRangeEnd": "[variables('networkSpec').authenticatedApiEndPort]",
                             "backendPort": "[variables('networkSpec').authenticatedApiBackEndPort]"
                         }
-                        
                     },
                     {
                         "name": "[variables('networkSpec').revealNatPoolName]",
@@ -194,7 +195,6 @@
                             "frontendPortRangeEnd": "[variables('networkSpec').revealEndPort]",
                             "backendPort": "[variables('networkSpec').revealBackEndPort]"
                         }
-                        
                     }
                 ]
             }
@@ -286,11 +286,29 @@
                                 "properties": {
                                     "publisher": "Microsoft.Azure.Extensions",
                                     "settings": {
-                                        "fileUris": ["[variables('prepareDrives')]"],
-                                        "commandToExecute":"sh prepareDrives.sh"
+                                        "fileUris": [
+                                            "[variables('prepareDrives')]"
+                                        ],
+                                        "commandToExecute": "sh prepareDrives.sh"
                                     },
                                     "typeHandlerVersion": "2.0",
-                                    "autoUpgradeMinorVersion":true,
+                                    "autoUpgradeMinorVersion": true,
+                                    "type": "CustomScript"
+                                }
+                            },
+                            {
+                                "name": "logInToMaster",
+                                "properties": {
+                                    "publisher": "Microsoft.Azure.Extensions",
+                                    "settings": {
+                                        "fileUris": [
+                                            "[variables('logInToMaster')]"
+                                        ],
+                                        "comments": "Once we reference the network interface above the IP address is always found in this location",
+                                        "commandToExecute": "[concat('sh logInToMaster.sh ',reference(variables('firstVMNIC'),parameters('computeApiVersion')).ipConfigurations[0].properties.privateIPaddress)]"
+                                    },
+                                    "typeHandlerVersion": "2.0",
+                                    "autoUpgradeMinorVersion": true,
                                     "type": "CustomScript"
                                 }
                             }
