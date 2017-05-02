@@ -87,7 +87,7 @@
         },
         "prepareDrives": "[concat( parameters('scriptsUri'), 'prepareDrives.sh')]",
         "logInToMaster": "[concat( parameters('scriptsUri'), 'loginToMaster.sh')]",
-        "firstVMNIC": "[concat('Microsoft.Compute/virtualMachineScaleSets',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName'),'/ipConfigurations/myIpConfig')]"
+        "firstVMNIC": "[concat('Microsoft.Compute/virtualMachineScaleSets/',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName'),'/ipConfigurations/myIpConfig')]"
     },
     "resources": [
         {
