@@ -305,7 +305,7 @@
                                             "[variables('logInToMaster')]"
                                         ],
                                         "comments": "Once we reference the network interface above the IP address is always found in this location",
-                                        "commandToExecute": "[concat('sh logInToMaster.sh ',reference(variables('firstVMNIC'),parameters('computeApiVersion')).ipConfigurations[0].properties.privateIPaddress)]"
+                                        "commandToExecute": "[concat('sh logInToMaster.sh ',reference(concat('Microsoft.Compute/virtualMachineScaleSets/',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName'),'/ipConfigurations/myIpConfig'),parameters('computeApiVersion')).ipConfigurations[0].properties.privateIPaddress)]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
