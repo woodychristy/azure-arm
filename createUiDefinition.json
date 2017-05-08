@@ -216,26 +216,84 @@
                             "regex": "^[0-9a-zA-Z][0-9a-zA-Z-]{2,10}$",
                             "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
                         }
+                    },
+                    {
+                        "name": "enableOdbcConnector",
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Enable SQL connections via ODBC",
+                        "defaultValue": true,
+                        "toolTip": "True to enable or false to disable",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "True",
+                                    "value": true
+                                },
+                                {
+                                    "label": "False",
+                                    "value": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "enableCaravel",
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Enable Reveal UI",
+                        "defaultValue": true,
+                        "toolTip": "True to enable or false to disable",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "True",
+                                    "value": true
+                                },
+                                {
+                                    "label": "False",
+                                    "value": false
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "enableKibana",
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Enable Kibina",
+                        "defaultValue": false,
+                        "toolTip": "True to enable or false to disable",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "True",
+                                    "value": true
+                                },
+                                {
+                                    "label": "False",
+                                    "value": false
+                                }
+                            ]
+                        }
                     }
-                ]
+                ],
+                "outputs": {
+                    "adminUsername": "[basics('adminUsername')]",
+                    "adminPassword": "[basics('adminCredentials').password]",
+                    "clusterName": "[steps('clusterSettingsStep').clusterName]",
+                    "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
+                    "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
+                    "sizeOfDataDiskInGB": "[steps('clusterSettingsStep').sizeOfDataDiskInGB]",
+                    "addressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
+                    "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetwork.name]",
+                    "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
+                    "subnetPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
+                    "virtualNetworkSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
+                    "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]",
+                    "publicIPAddressName": "[steps('clusterSettingsStep').dnsAndPublicIP.domainNameLabel]",
+                    "loadBalancerName": "[steps('clusterSettingsStep').loadBalancerName]",
+                    "enableOdbcConnector": "[steps('clusterSettingsStep').enableOdbcConnector]",
+                    "enableCaravel": "[steps('clusterSettingsStep').enableKibana]",
+                    "enableKibana": "[steps('clusterSettingsStep').enableKibana]"
+
+                }
             }
-        ],
-        "outputs": {
-            "adminUsername": "[basics('adminUsername')]"
-            ,
-            "adminPassword": "[basics('adminCredentials').password]",
-            "clusterName": "[steps('clusterSettingsStep').clusterName]",
-            "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
-            "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
-            "sizeOfDataDiskInGB": "[steps('clusterSettingsStep').sizeOfDataDiskInGB]",
-            "addressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
-            "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetwork.name]",
-            "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
-            "subnetPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
-            "virtualNetworkSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
-            "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]",
-            "publicIPAddressName": "[steps('clusterSettingsStep').dnsAndPublicIP.domainNameLabel]",
-            "loadBalancerName": "[steps('clusterSettingsStep').loadBalancerName]"
         }
-    }
-}
