@@ -232,7 +232,10 @@
                             }
                         ],
                         "imageReference": {
-                            "id": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/MARKETPLACEIMAGES/providers/Microsoft.Compute/images/kinetica-ubuntu-1604"
+                            "publisher": "Canonical",
+                            "offer": "UbuntuServer",
+                            "sku": "16.04-LTS",
+                            "version": "latest"
                         }
                     },
                     "osProfile": {
@@ -303,9 +306,9 @@
         }
     ],
     "outputs": {
-        "firstVMIP":{
+        "firstVMIP": {
             "type": "string",
-            "value":"[reference(concat('Microsoft.Compute/virtualMachineScaleSets/',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName')),parameters('computeApiVersion')).ipConfigurations[0].properties.privateIPaddress]"
+            "value": "[reference(concat('Microsoft.Compute/virtualMachineScaleSets/',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName')),parameters('computeApiVersion')).ipConfigurations[0].properties.privateIPaddress]"
         }
     }
 }
