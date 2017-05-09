@@ -59,6 +59,15 @@
         },
         "subnetPrefix": {
             "type": "string"
+        },
+        "enableOdbConnector": {
+            "type": "bool"
+        },
+        "enableCaravel": {
+            "type": "bool"
+        },
+        "enableKibana": {
+            "type": "bool"
         }
     },
     "variables": {
@@ -128,21 +137,23 @@
                     "subnetPrefix": {
                         "value": "[parameters('subnetPrefix')]"
                     },
-                    
                     "existingVnetId": {
                         "value": "[variables('existingVnetId')]"
                     },
-                    "scriptsUri":{
+                    "scriptsUri": {
                         "value": "[variables('scriptsUri')]"
+                    },
+                    "enableOdbConnector":{
+                        "value": "[parameters('enableOdbConnector')]"
+                    },
+                    "enableCaravel":{
+                        "value": "[parameters('enableOdbConnector')]"
+                    },
+                    "enableKibana":{
+                        "value": "[parameters('enableKibana')]"
                     }
                 }
             }
         }
-    ],
-    "outputs": {
-        "firstNodeIP":{
-"type": "string","value": "[reference('vmssTemplate').firstVMIP.value]"
-
-        }
-    }
+    ]
 }
