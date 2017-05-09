@@ -29,7 +29,8 @@ NUM_VMS=$2
 #Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
 VMSS_NUM_LENGTH=6
 #Anaible file list of hosts
-INVENTORY_FILE="/etc/ansible/hosts"
+INVENTORY_FILE_DIR="/etc/ansible/"
+INVENTORY_FILE=$INVENTORY_FILE_DIR"hosts"
 
 
 
@@ -129,9 +130,10 @@ getHostnames(){
 getFirstNode(){
     firstNode=$1$(printf %0${VMSS_NUM_LENGTH}d 0)
     echo $firstNode
-    if [ "$HOSTNAME" = $firstNode]; then
+    if [[ $(hostname -s) = $firstNode ]]; then
        log "------- First node! Generating hostnames and running install -------"
-       getHostnames $VM_NAME_PREFIX $NUM_VMS
+       sudo mkdir -p $INVENTORY_FILE_DIR
+        getHostnames $VM_NAME_PREFIX $NUM_VMS
     else
        log "------- Not the first node exiting -------"
     fi
