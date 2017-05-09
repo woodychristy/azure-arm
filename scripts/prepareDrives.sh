@@ -132,14 +132,16 @@ getHostnames(){
 getFirstNode(){
     firstNode=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
     host=$( hostname -s )
-    if [[ "$host"" == "$firstNode"" ]]; then
+    if [[ "$host" == "$firstNode" ]]; then
        log "------- First node! Generating hostnames and running install -------"
+       log "FirstNode:"$firstNode
+       log " Hostname:"$host
        sudo mkdir -p $INVENTORY_FILE_DIR
        getHostnames $VM_NAME_PREFIX $NUM_VMS
     else
        log "------- Not the first node exiting -------"
-       log "FirstNode:"$firstNode"dog"
-       log " Hostname:"$host"dog"
+       log "FirstNode:"$firstNode
+       log " Hostname:"$host
     fi
 }
 
