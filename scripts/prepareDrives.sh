@@ -129,7 +129,7 @@ getHostnames(){
 
 getFirstNode(){
     firstNode=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
-    log $firstNode " First Node's hostname'"
+    log $firstNode " First Node's hostname'. Hostname of this node: "$(hostname -s) 
     if [[ $(hostname -s) = $firstNode ]]; then
        log "------- First node! Generating hostnames and running install -------"
        sudo mkdir -p $INVENTORY_FILE_DIR
