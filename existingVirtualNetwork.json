@@ -60,6 +60,15 @@
         },
         "scriptsUri": {
             "type": "string"
+        },
+        "enableOdbConnector": {
+            "type": "bool"
+        },
+        "enableCaravel": {
+            "type": "bool"
+        },
+        "enableKibana": {
+            "type": "bool"
         }
     },
     "variables": {
