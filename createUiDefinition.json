@@ -274,7 +274,9 @@
                             ]
                         }
                     }
-                ],
+                ]
+            }
+        ],
                 "outputs": {
                     "adminUsername": "[basics('adminUsername')]",
                     "adminPassword": "[basics('adminCredentials').password]",
@@ -291,9 +293,9 @@
                     "publicIPAddressName": "[steps('clusterSettingsStep').dnsAndPublicIP.domainNameLabel]",
                     "loadBalancerName": "[steps('clusterSettingsStep').loadBalancerName]",
                     "enableOdbcConnector": "[steps('clusterSettingsStep').enableOdbcConnector]",
-                    "enableCaravel": "[steps('clusterSettingsStep').enableKibana]",
+                    "enableCaravel": "[steps('clusterSettingsStep').enableCaravel]",
                     "enableKibana": "[steps('clusterSettingsStep').enableKibana]"
-
                 }
             }
         }
+    
