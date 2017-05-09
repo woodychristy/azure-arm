@@ -57,6 +57,15 @@
         },
         "scriptsUri": {
             "type": "string"
+        },
+        "enableOdbConnector": {
+            "type": "bool"
+        },
+        "enableCaravel": {
+            "type": "bool"
+        },
+        "enableKibana": {
+            "type": "bool"
         }
     },
     "variables": {
@@ -292,7 +301,7 @@
                                         "fileUris": [
                                             "[variables('prepareDrives')]"
                                         ],
-                                        "commandToExecute": "sh prepareDrives.sh"
+                                        "commandToExecute":"[concat('sh prepareDrives.sh ',parameters('clusterName'),' ',parameters('clusterSize'))]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
