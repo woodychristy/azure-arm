@@ -301,7 +301,7 @@
                                         "fileUris": [
                                             "[variables('prepareDrives')]"
                                         ],
-                                        "commandToExecute":"[concat('bash -c prepareDrives.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn)]"
+                                        "commandToExecute":"[concat('bash prepareDrives.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn)]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
