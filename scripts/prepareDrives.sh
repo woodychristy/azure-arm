@@ -22,6 +22,17 @@ log() {
   echo "$(date) [${EXECNAME}]: $*" >> "${LOG_FILE}"
 }
 
+# cluster name prefix which is hostname prefix
+VM_NAME_PREFIX=$1
+#total number of vms in the cluster
+NUM_VMS=$2
+#Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
+VMSS_NUM_LENGTH=6
+#Anaible file list of hosts
+INVENTORY_FILE="/etc/ansible/hosts"
+
+
+
 cat > inputs2.sh << 'END'
 
 
@@ -104,11 +115,41 @@ prepare_disk()
 
 END
 
+getHostnames(){
+
+    i=0
+    while [ $i -lt $2 ]; do
+      machineName=$1$(printf %0${VMSS_NUM_LENGTH}d $i)
+      sudo echo $machineName >>$INVENTORY_FILE
+      let i=$i+1
+    done  
+
+}
+
+getFirstNode(){
+    firstNode=$1$(printf %0${VMSS_NUM_LENGTH}d 0)
+    echo $firstNode
+    if [ "$HOSTNAME" = $firstNode]; then
+       log "------- First node! Generating hostnames and running install -------"
+       getHostnames $VM_NAME_PREFIX $NUM_VMS
+    else
+       log "------- Not the first node exiting -------"
+    fi
+}
+
 log "------- prepareDrives.sh starting -------"
 
 sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
 log "------- prepareDrivess.sh succeeded -------"
  
+log "------- Determining if first node -------"
+
+
+getFirstNode $VM_NAME_PREFIX
+
+
+
+
 # always `exit 0` on success
 exit 0
