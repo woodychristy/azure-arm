@@ -136,6 +136,8 @@ getFirstNode(){
        getHostnames $VM_NAME_PREFIX $NUM_VMS
     else
        log "------- Not the first node exiting -------"
+       log "FirstNode:"$firstNode
+       log " Hostname:"$host
     fi
 }
 
