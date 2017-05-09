@@ -31,7 +31,7 @@ VMSS_NUM_LENGTH=6
 #Anaible file list of hosts
 INVENTORY_FILE_DIR="/etc/ansible/"
 INVENTORY_FILE=$INVENTORY_FILE_DIR"hosts"
-
+DOMAIN=$(domainname)
 
 
 cat > inputs2.sh << 'END'
@@ -128,12 +128,12 @@ getHostnames(){
 }
 
 getFirstNode(){
-    firstNode=$1$(printf %0${VMSS_NUM_LENGTH}d 0)
-    echo $firstNode
+    firstNode=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
+    log $firstNode " First Node's hostname'"
     if [[ $(hostname -s) = $firstNode ]]; then
        log "------- First node! Generating hostnames and running install -------"
        sudo mkdir -p $INVENTORY_FILE_DIR
-        getHostnames $VM_NAME_PREFIX $NUM_VMS
+       getHostnames $VM_NAME_PREFIX $NUM_VMS
     else
        log "------- Not the first node exiting -------"
     fi
@@ -147,6 +147,8 @@ log "------- prepareDrivess.sh succeeded -------"
  
 log "------- Determining if first node -------"
 
+log $VM_NAME_PREFIX
+log $NUM_VMS
 
 getFirstNode $VM_NAME_PREFIX
 
