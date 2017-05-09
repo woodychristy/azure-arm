@@ -26,6 +26,8 @@ log() {
 VM_NAME_PREFIX=$1
 #total number of vms in the cluster
 NUM_VMS=$2
+HEAD_NODE_IP=$3
+
 #Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
 VMSS_NUM_LENGTH=6
 #Anaible file list of hosts
@@ -130,7 +132,7 @@ getHostnames(){
 getFirstNode(){
     firstNode=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
     host=$( hostname -s )
-    if [ "$host" == "$firstNode" ]; then
+    if [[ "$host" == "$firstNode" ]]; then
        log "------- First node! Generating hostnames and running install -------"
        sudo mkdir -p $INVENTORY_FILE_DIR
        getHostnames $VM_NAME_PREFIX $NUM_VMS
@@ -151,7 +153,7 @@ log "------- Determining if first node -------"
 
 log $VM_NAME_PREFIX
 log $NUM_VMS
-
+log $HEAD_NODE_IP
 getFirstNode 
 
 
