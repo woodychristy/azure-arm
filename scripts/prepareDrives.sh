@@ -29,12 +29,14 @@ NUM_VMS=$2
 HEAD_NODE_IP=$3
 
 #Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
-VMSS_NUM_LENGTH=6
+declare -i VMSS_NUM_LENGTH=6
 #Anaible file list of hosts
 INVENTORY_FILE_DIR="/etc/ansible/"
 INVENTORY_FILE=$INVENTORY_FILE_DIR"hosts"
 DOMAIN=$(domainname)
 
+#Time out in seconds to wait for all machines to come up
+declare -i HOST_CHECK_TIMEOUT=30
 
 cat > inputs2.sh << 'END'
 
@@ -118,6 +120,45 @@ prepare_disk()
 
 END
 
+checkAllNodesUp(){
+  #initialize
+   numLiveHosts=0;
+   START_TIME=$SECONDS
+   declare -i ELAPSED_TIME=0
+while [[ "$numLiveHosts" -lt "$NUM_VMS" && "$ELAPSED_TIME" -lt "$HOST_CHECK_TIMEOUT" ]];
+ do
+     #reset counter
+     numLiveHosts=0;
+   while read hostToCheck; 
+    do
+      if ping -c 2 -w 2 $hostToCheck &>/devnull
+         then
+         log $hostToCheck " is alive"
+         let numLiveHosts=$numLiveHosts+1
+      else
+         log $hostToCheck " is not alive" 
+      fi
+   done<$INVENTORY_FILE
+   log "Found "$numLiveHosts " live hosts. Expected "$NUM_VMS " live hosts"
+    let ELAPSED_TIME=$(($SECONDS - $START_TIME))
+   #Reset numLiveHosts for loop
+ done 
+#if we timed out log error and throw exception
+echo $numLiveHosts $NUM_VMS $ELAPSED_TIME $HOST_CHECK_TIMEOUT
+
+if [[ $ELAPSED_TIME -le $HOST_CHECK_TIMEOUT ]];
+  then
+     log "Timed out looking for live hosts. Waited " $ELAPSED_TIME " seconds"
+     exit -1
+  else
+     log "All nodes are up!"
+fi
+
+
+}
+
+
+
 getHostnames(){
 
     i=0
@@ -130,20 +171,25 @@ getHostnames(){
 }
 
 getFirstNode(){
+   log "------- Determining if first node -------"
     firstNode=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
     host=$( hostname -s )
+    log "FirstNode:"$firstNode
+    log " Hostname:"$host
+
     if [[ "$host" == "$firstNode" ]]; then
        log "------- First node! Generating hostnames and running install -------"
-       log "FirstNode:"$firstNode
-       log " Hostname:"$host
        sudo mkdir -p $INVENTORY_FILE_DIR
+       #delete inventory file if it exists
+       [ -e $INVENTORY_FILE ]  && rm $INVENTORY_FILE
        getHostnames $VM_NAME_PREFIX $NUM_VMS
+       checkAllNodesUp
     else
        log "------- Not the first node exiting -------"
-       log "FirstNode:"$firstNode
-       log " Hostname:"$host
     fi
 }
+
+
 
 log "------- prepareDrives.sh starting -------"
 
@@ -151,7 +197,6 @@ sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
 log "------- prepareDrivess.sh succeeded -------"
  
-log "------- Determining if first node -------"
 
 log $VM_NAME_PREFIX
 log $NUM_VMS
@@ -163,3 +208,4 @@ getFirstNode
 
 # always `exit 0` on success
 exit 0
+
