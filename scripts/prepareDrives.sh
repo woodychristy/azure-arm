@@ -36,7 +36,7 @@ INVENTORY_FILE=$INVENTORY_FILE_DIR"hosts"
 DOMAIN=$(domainname)
 
 #Time out in seconds to wait for all machines to come up
-declare -i HOST_CHECK_TIMEOUT=30
+declare -i HOST_CHECK_TIMEOUT=300
 
 cat > inputs2.sh << 'END'
 
@@ -146,7 +146,7 @@ while [[ "$numLiveHosts" -lt "$NUM_VMS" && "$ELAPSED_TIME" -lt "$HOST_CHECK_TIME
 #if we timed out log error and throw exception
 echo $numLiveHosts $NUM_VMS $ELAPSED_TIME $HOST_CHECK_TIMEOUT
 
-if [[ $ELAPSED_TIME -le $HOST_CHECK_TIMEOUT ]];
+if [[ $ELAPSED_TIME -gt $HOST_CHECK_TIMEOUT ]];
   then
      log "Timed out looking for live hosts. Waited " $ELAPSED_TIME " seconds"
      exit -1
