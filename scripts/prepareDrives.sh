@@ -163,7 +163,8 @@ getHostnames(){
     i=0
     while [ $i -lt "$NUM_VMS" ]; do
       machineName=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
-      echo "$machineName"|sudo -tee -a $INVENTORY_FILE
+      #create empty inventory file
+      sudo echo "$machineName" >>$INVENTORY_FILE
       let i=$i+1
     done  
 
