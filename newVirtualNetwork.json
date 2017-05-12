@@ -236,9 +236,6 @@
                             "createOption": "FromImage",
                             "image":{
                                 "uri": "https://kineticadbmarketplace.blob.core.windows.net/images/pkrosv5jnkwnzh9.vhd"
-                            },
-                            "managedDisk":{
-                                "storageAccountType":"Standard_LRS"
                             }
                         },
                         "dataDisks": [
