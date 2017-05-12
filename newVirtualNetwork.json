@@ -244,13 +244,7 @@
                                 "lun": 0,
                                 "createOption": "Empty"
                             }
-                        ],
-                        "imageReference": {
-                            "publisher": "Canonical",
-                            "offer": "UbuntuServer",
-                            "sku": "16.04-LTS",
-                            "version": "latest"
-                        }
+                        ]
                     },
                     "osProfile": {
                         "computerNamePrefix": "[parameters('clusterName')]",
