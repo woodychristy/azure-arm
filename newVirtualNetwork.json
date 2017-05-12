@@ -230,16 +230,8 @@
                 "virtualMachineProfile": {
                     "storageProfile": {
                         "osDisk": {
-                            "osType": "Linux",
-                            "name": "KineticaVHD",
                             "caching": "ReadOnly",
-                            "createOption": "FromImage",
-                            "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
-                            },
-                            "image": {
-                                "uri": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/WoodyTestSharedResources/providers/Microsoft.Compute/disks/VHDTest"
-                            }
+                            "createOption": "FromImage"
                         },
                         "dataDisks": [
                             {
@@ -247,7 +239,10 @@
                                 "lun": 0,
                                 "createOption": "Empty"
                             }
-                        ]
+                        ],
+                        "imageReference": {
+                            "id": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/WoodyTestSharedResources/providers/Microsoft.Compute/images/VHDTest"
+                        }
                     },
                     "osProfile": {
                         "computerNamePrefix": "[parameters('clusterName')]",
