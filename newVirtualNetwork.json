@@ -230,11 +230,14 @@
                 "virtualMachineProfile": {
                     "storageProfile": {
                         "osDisk": {
-                            "osType":"Linux",
+                            "osType": "Linux",
                             "name": "KineticaVHD",
                             "caching": "ReadOnly",
                             "createOption": "FromImage",
-                            "image":{
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            },
+                            "image": {
                                 "uri": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/WoodyTestSharedResources/providers/Microsoft.Compute/disks/VHDTest"
                             }
                         },
@@ -300,7 +303,7 @@
                                         "fileUris": [
                                             "[variables('prepareDrives')]"
                                         ],
-                                        "commandToExecute":"[concat('bash prepareDrives.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn)]"
+                                        "commandToExecute": "[concat('bash prepareDrives.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn)]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
