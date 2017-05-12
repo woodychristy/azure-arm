@@ -235,7 +235,8 @@
                             "caching": "ReadOnly",
                             "createOption": "FromImage",
                             "image":{
-                                "uri": "https://kineticadbmarketplace.blob.core.windows.net/images/pkrosv5jnkwnzh9.vhd/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/WoodyTestSharedResources/providers/Microsoft.Compute/disks/VHDTest"
+                                "uri": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/WoodyTestSharedResources/providers/Microsoft.Compute/disks/VHDTest"
+                            }
                         },
                         "dataDisks": [
                             {
