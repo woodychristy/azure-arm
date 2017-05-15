@@ -94,9 +94,7 @@
             "revealEndPort": 50399,
             "revealBackEndPort": 8088
         },
-        "prepareDrives": "[concat( parameters('scriptsUri'), 'prepareDrives.sh')]",
-        "logInToMaster": "[concat( parameters('scriptsUri'), 'loginToMaster.sh')]",
-        "firstVMNIC": "[concat('Microsoft.Compute/virtualMachineScaleSets/',parameters('clusterName'),'/virtualMachines/0/networkInterfaces/',parameters('virtualNetworkName'),'/ipConfigurations/myIpConfig')]"
+        "installKinetica": "[concat( parameters('scriptsUri'), 'installKinetica.sh')]"
     },
     "resources": [
         {
@@ -291,14 +289,14 @@
                     "extensionProfile": {
                         "extensions": [
                             {
-                                "name": "prepareDrives",
+                                "name": "installKinetica",
                                 "properties": {
                                     "publisher": "Microsoft.Azure.Extensions",
                                     "settings": {
                                         "fileUris": [
-                                            "[variables('prepareDrives')]"
+                                            "[variables('installKinetica')]"
                                         ],
-                                        "commandToExecute": "[concat('bash prepareDrives.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn)]"
+                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn)]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
