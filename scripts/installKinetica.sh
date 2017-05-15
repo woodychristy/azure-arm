@@ -1,15 +1,4 @@
 #!/bin/bash
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 LOG_FILE="/tmp/kinetica-install.log"
 
@@ -122,26 +111,26 @@ END
 
 checkAllNodesUp(){
   #initialize
-   numLiveHosts=0;
+   NUM_LIVE_HOSTS=0;
    START_TIME=$SECONDS
    declare -i ELAPSED_TIME=0
-while [[ "$numLiveHosts" -lt "$NUM_VMS" && "$ELAPSED_TIME" -lt "$HOST_CHECK_TIMEOUT" ]];
+while [[ "$NUM_LIVE_HOSTS" -lt "$NUM_VMS" && "$ELAPSED_TIME" -lt "$HOST_CHECK_TIMEOUT" ]];
  do
      #reset counter
-     numLiveHosts=0;
-   while read -r hostToCheck; 
+     NUM_LIVE_HOSTS=0;
+   while read -r HOST_TO_CHECK; 
     do
-      if ping -c 2 -w 2 "$hostToCheck" &>/devnull
+      if ping -c 2 -w 2 "$HOST_TO_CHECK" &>/devnull
          then
-         log "$hostToCheck" " is alive"
-         let numLiveHosts=$numLiveHosts+1
+         log "$HOST_TO_CHECK" " is alive"
+         let NUM_LIVE_HOSTS=$NUM_LIVE_HOSTS+1
       else
-         log "$hostToCheck" " is not alive" 
+         log "$HOST_TO_CHECK" " is not alive" 
       fi
    done<$INVENTORY_FILE
-   log "Found "$numLiveHosts " live hosts. Expected ""$NUM_VMS" " live hosts"
+   log "Found "$NUM_LIVE_HOSTS " live hosts. Expected ""$NUM_VMS" " live hosts"
     let ELAPSED_TIME=$((SECONDS - START_TIME))
-   #Reset numLiveHosts for loop
+   #Reset NUM_LIVE_HOSTS for loop
  done 
 #if we timed out log error and throw exception
 
@@ -162,9 +151,9 @@ getHostnames(){
 
     i=0
     while [ $i -lt "$NUM_VMS" ]; do
-      machineName=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
+      MACHINE_NAME=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
       #create empty inventory file
-      sudo echo "$machineName" >>$INVENTORY_FILE
+      sudo echo "$MACHINE_NAME" >>$INVENTORY_FILE
       let i=$i+1
     done  
 
