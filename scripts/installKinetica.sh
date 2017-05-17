@@ -4,7 +4,7 @@ LOG_FILE="/tmp/kinetica-install.log"
 
 # manually set EXECNAME because this file is called from another script and it $0 contains a 
 # relevant path
-EXECNAME="prepareDrives.sh"
+EXECNAME="installKinetica.sh"
 
 # logs everything to the $LOG_FILE
 log() {
@@ -15,7 +15,17 @@ log() {
 VM_NAME_PREFIX=$1
 #total number of vms in the cluster
 declare -i NUM_VMS=$2
+
+#Setup variables passed in
 HEAD_NODE_IP=$3
+ENABLE_ODBC=$4
+ENABLE_CARAVEL=$5
+ENABLE_KIBANA=$6
+SSH_USER=$7
+SSH_PASSWORD=$8
+#Upper Case Instance type for lookup
+declare -u INSTANCE_TYPE=$9
+declare -i NUM_GPU=0
 
 #Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
 declare -i VMSS_NUM_LENGTH=6
@@ -23,6 +33,7 @@ declare -i VMSS_NUM_LENGTH=6
 INVENTORY_FILE_DIR="/etc/ansible/"
 INVENTORY_FILE=$INVENTORY_FILE_DIR"hosts"
 
+MAIN_YML_FILE="main.yml"
 
 #Time out in seconds to wait for all machines to come up
 declare -i HOST_CHECK_TIMEOUT=300
@@ -145,19 +156,46 @@ fi
 
 }
 
+setNumGPU(){
+  #From instance type set num GPU
+  case "$INSTANCE_TYPE" in
+  STANDARD_NC6) NUM_GPU=1
+    ;;
+  STANDARD_NC12) NUM_GPU=2
+    ;;
+  STANDARD_NC24) NUM_GPU=4
+  ;;
+  esac
 
+}
+
+setupMainYml(){
+
+  sed -i "s/kineticadb_head_ip_address: \"\"/kineticadb_head_ip_address: \"${HEAD_NODE_IP}\"/g" $MAIN_YML_FILE
+  sed -i "s/kineticadb_enable_caravel: \"\"/kineticadb_enable_caravel: \"${ENABLE_CARAVEL}\"/g" $MAIN_YML_FILE
+  sed -i "s/kineticadb_enable_odbc_connector: \"\"/kineticadb_enable_odbc_connector: \"${ENABLE_ODBC}\"/g" $MAIN_YML_FILE
+  sed -i "s/kineticadb_enable_kibana_connector: \"\"/kineticadb_enable_kibana_connector: \"${ENABLE_KIBANA}\"/g" $MAIN_YML_FILE
+
+}
+
+launchAnsible(){
+
+#enter cmd line to launch ansible here
+  echo "Launching ansible"
+}
 
 getHostnames(){
-
     i=0
     while [ $i -lt "$NUM_VMS" ]; do
       MACHINE_NAME=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
-      #create empty inventory file
+      #Populate inventory file
       sudo echo "$MACHINE_NAME" >>$INVENTORY_FILE
       let i=$i+1
     done  
 
 }
+
+
 
 getFirstNode(){
    log "------- Determining if first node -------"
@@ -173,6 +211,10 @@ getFirstNode(){
        [ -e $INVENTORY_FILE ]  && rm $INVENTORY_FILE
        getHostnames 
        checkAllNodesUp
+       setNumGPU
+       echo "Found the following number of GPUS: $NUM_GPU"
+       setupMainYml
+       launchAnsible
     else
        log "------- Not the first node exiting -------"
     fi
@@ -187,9 +229,7 @@ sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 log "------- prepareDrivess.sh succeeded -------"
  
 
-log "$VM_NAME_PREFIX"
-log "$NUM_VMS"
-log "$HEAD_NODE_IP"
+
 getFirstNode 
 
 
