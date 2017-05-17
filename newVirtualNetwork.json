@@ -295,8 +295,10 @@
                                     "settings": {
                                         "fileUris": [
                                             "[variables('installKinetica')]"
-                                        ],
-                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn)]"
+                                        ]
+                                    },
+                                    "protectedSettings": {
+                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',parameters('adminPassword'),' ',parameters('vmSKU')) ]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
