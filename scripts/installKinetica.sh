@@ -172,11 +172,11 @@ elif ! grep -F "$(cat $PUB_KEYFILE)" $AUTH_KEYFILE > /dev/null ; then
 fi
 
 #sudo chown $SSH_USER:$SSH_USER $AUTH_KEYFILE
-sudo chmod 644 $AUTH_KEYFILE
+chmod 644 $AUTH_KEYFILE
 
-sudo touch $KNOWN_HOSTS_FILE
+touch $KNOWN_HOSTS_FILE
 #sudo chown $SSH_USER:$SSH_USER $KNOWN_HOSTS_FILE
-sudo chmod 644 $KNOWN_HOSTS_FILE
+chmod 644 $KNOWN_HOSTS_FILE
 
 # Attempt to do passwordless ssh if they have 'sshpass' installed,cat
 # else they will hopefully have passwordless ssh already configured
@@ -197,10 +197,10 @@ for i in ${DST_IPs[@]}; do
     KNOWN_HOST_STR=$(ssh-keyscan $i)
 
     if ! grep -F "$KNOWN_HOST_STR" $KNOWN_HOSTS_FILE > /dev/null; then
-        log $KNOWN_HOST_STR >> $SSH_KEY_DIR/known_hosts
+        echo $KNOWN_HOST_STR >> $SSH_KEY_DIR/known_hosts
     fi
 
-    log
+    
 done
 
 # After assembling the list of 'known_hosts', redistribute the list to everybody.
@@ -310,7 +310,7 @@ getFirstNode(){
        checkAllNodesUp
        setNumGPU
        log "Found the following number of GPUS: $NUM_GPU"
-       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>kinetica-ssh-setup.log"
+       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh; $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>kinetica-ssh-setup.log"
        setupMainYml
        launchAnsible
     else
