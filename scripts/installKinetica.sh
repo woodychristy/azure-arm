@@ -2,6 +2,8 @@
 
 LOG_FILE="/tmp/kinetica-install.log"
 
+#Debugging need to set this world writeable
+
 # manually set EXECNAME because this file is called from another script and it $0 contains a 
 # relevant path
 EXECNAME="installKinetica.sh"
@@ -324,6 +326,8 @@ getFirstNode(){
 
 
 log "------- prepareDrives.sh starting -------"
+#Debugging need to set this world writeable
+chmod 777 $LOG_FILE
 
 sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
