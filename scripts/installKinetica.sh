@@ -165,10 +165,10 @@ declare -a DST_IPs
 
 
 if [ ! -f $AUTH_KEYFILE ]; then
-    echo "Creating : $AUTH_KEYFILE"
+    log "Creating : $AUTH_KEYFILE"
     cat $PUB_KEYFILE >> $AUTH_KEYFILE
 elif ! grep -F "$(cat $PUB_KEYFILE)" $AUTH_KEYFILE > /dev/null ; then
-    echo "Updating : $AUTH_KEYFILE"
+    log "Updating : $AUTH_KEYFILE"
     cat $PUB_KEYFILE >> $AUTH_KEYFILE
 fi
 
@@ -216,6 +216,9 @@ log "All done."
 
 
 END
+
+chmod 755 sshUserSetup.sh 
+
 
 checkAllNodesUp(){
   #initialize
@@ -315,7 +318,7 @@ getFirstNode(){
        log "------- sshUserSetup.sh starting -------"
        touch /tmp/kinetica-ssh-setup.log
        chmod 777 /tmp/kinetica-ssh-setup.log
-       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh; sshKeySetup $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
+       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh; sshKeySetup $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
        log "------- sshUserSetup.sh fineshed -------"
        setupMainYml
        launchAnsible
