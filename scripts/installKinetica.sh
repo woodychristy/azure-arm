@@ -124,7 +124,7 @@ END
 
 #Setup ssh user to do passworld less ssh script
 
-cat > sshUserSetup.sh << 'END'
+cat > /tmp/sshUserSetup.sh << 'END'
 
 
 LOG_FILE="/tmp/kinetica-ssh-setup.log"
@@ -140,7 +140,7 @@ log() {
 
 
 
-sshKeySetup(){
+
 export SSHPASS="$1"
 VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
@@ -212,12 +212,12 @@ done
 
 log "All done."
 
-}
+
 
 
 END
 
-chmod 755 sshUserSetup.sh 
+chmod 755 /tmp/sshUserSetup.sh 
 
 
 checkAllNodesUp(){
@@ -318,7 +318,7 @@ getFirstNode(){
        log "------- sshUserSetup.sh starting -------"
        touch /tmp/kinetica-ssh-setup.log
        chmod 777 /tmp/kinetica-ssh-setup.log
-       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh; sshKeySetup $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
+       sudo su $SSH_USER bash -c "source /tmp/sshUserSetup.sh $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
        log "------- sshUserSetup.sh fineshed -------"
        setupMainYml
        launchAnsible
