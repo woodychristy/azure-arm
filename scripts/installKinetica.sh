@@ -380,7 +380,7 @@ getFirstNode(){
        checkAllNodesUp
        setNumGPU
        log "Found the following number of GPUS: $NUM_GPU"
-       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh.sh $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS"
+       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS"
        setupMainYml
        launchAnsible
     else
