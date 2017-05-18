@@ -124,7 +124,23 @@ END
 
 cat > sshUserSetup.sh << 'END'
 
-setupKeys(){
+
+LOG_FILE="/tmp/kinetica-ssh-setup.log"
+2>&1 >>$LOG_FILE
+
+# manually set EXECNAME because this file is called from another script and it $0 contains a 
+# relevant path
+EXECNAME="sshUserSetup.sh"
+
+# logs everything to the $LOG_FILE
+log() {
+  echo "$(date) [${EXECNAME}]: $*" >> "${LOG_FILE}"
+}
+
+
+
+
+export SSHPASS="$1"
 VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
 declare -i NUM_VMS=$3
@@ -146,7 +162,6 @@ declare -a DST_IPs
       let i=$i+1
     done
 
-echo ${DST_IPs[*]}
 
 if [ ! -f $AUTH_KEYFILE ]; then
     echo "Creating : $AUTH_KEYFILE"
@@ -166,14 +181,14 @@ sudo chmod 644 $KNOWN_HOSTS_FILE
 # Attempt to do passwordless ssh if they have 'sshpass' installed,cat
 # else they will hopefully have passwordless ssh already configured
 # or they will have to type the password over and over.
-export SSHPASS="$1"
+
 SSHPASS_CMD="sshpass -e"
 
 
 for i in ${DST_IPs[@]}; do
-    echo "---------------------------------------------------------"
-    echo "Copying ssh keys to $i"
-    echo "---------------------------------------------------------"
+    log "---------------------------------------------------------"
+    log "Copying ssh keys to $i"
+    log "---------------------------------------------------------"
 
     $SSHPASS_CMD  rsync -avr "$SSH_KEY_DIR/." "$i:$SSH_KEY_DIR/."
 
@@ -182,10 +197,10 @@ for i in ${DST_IPs[@]}; do
     KNOWN_HOST_STR=$(ssh-keyscan $i)
 
     if ! grep -F "$KNOWN_HOST_STR" $KNOWN_HOSTS_FILE > /dev/null; then
-        echo $KNOWN_HOST_STR >> $SSH_KEY_DIR/known_hosts
+        log $KNOWN_HOST_STR >> $SSH_KEY_DIR/known_hosts
     fi
 
-    echo
+    log
 done
 
 # After assembling the list of 'known_hosts', redistribute the list to everybody.
@@ -194,12 +209,8 @@ for i in $DST_IPs; do
 done
 
 
-echo "All done."
+log "All done."
 
-
-}
-
-setupKeys $1 $2 $3
 
 
 END
@@ -253,87 +264,6 @@ setNumGPU(){
 
 }
 
-setupKeys(){
-sudo su $SSH_USER -l -c "ssh-keygen -t rsa -N \"\" -f ./.ssh/id_rsa"
-
-SSH_USER_HOME=$(eval echo ~$SSH_USER)
-SSH_KEY_DIR=$SSH_USER_HOME/.ssh
-PUB_KEYFILE=$SSH_KEY_DIR/id_rsa.pub
-AUTH_KEYFILE=$SSH_KEY_DIR/authorized_keys
-KNOWN_HOSTS_FILE=$SSH_KEY_DIR/known_hosts
-
-declare -a DST_IPs
-
-    i=0
-    while [ $i -lt "$NUM_VMS" ]; do
-      DST_IPs[$i]=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
-      let i=$i+1
-    done  
-
-
-
-if [ ! -f $AUTH_KEYFILE ]; then
-    log "Creating : $AUTH_KEYFILE"
-    cat $PUB_KEYFILE >> $AUTH_KEYFILE
-elif ! grep -F "$(cat $PUB_KEYFILE)" $AUTH_KEYFILE > /dev/null ; then
-    log "Updating : $AUTH_KEYFILE"
-    cat $PUB_KEYFILE >> $AUTH_KEYFILE
-fi
-
-sudo chown $SSH_USER:$SSH_USER $AUTH_KEYFILE
-sudo chmod 644 $AUTH_KEYFILE
-
-sudo touch $KNOWN_HOSTS_FILE
-sudo chown $SSH_USER:$SSH_USER $KNOWN_HOSTS_FILE
-sudo chmod 644 $KNOWN_HOSTS_FILE
-
-# Attempt to do passwordless ssh if they have 'sshpass' installed,cat
-# else they will hopefully have passwordless ssh already configured
-# or they will have to type the password over and over.
-export SSHPASS=$SSH_PASSWORD
-SSHPASS_CMD="sshpass -e"
-
-
-for i in ${DST_IPs[@]}; do
-    echo "---------------------------------------------------------"
-    echo "Copying ssh keys to $i"
-    echo "---------------------------------------------------------"
-
-    $SSHPASS_CMD  rsync -avr "$SSH_KEY_DIR/." "$i:$SSH_KEY_DIR/."
-
-
-    # Make these hosts known to us, gets all public keys for all users.
-    KNOWN_HOST_STR=$(ssh-keyscan $i)
-
-    if ! grep -F "$KNOWN_HOST_STR" $KNOWN_HOSTS_FILE > /dev/null; then
-        echo $KNOWN_HOST_STR >> $SSH_KEY_DIR/known_hosts
-    fi
-
-    echo
-done
-
-# After assembling the list of 'known_hosts', redistribute the list to everybody.
-for i in $DST_IPs; do
-    $SSHPASS_CMD  rsync -ar "$SSH_KEY_DIR/." "$i:$SSH_KEY_DIR/."
-done
-
-# Validate that we can ssh without asking for any passwords or errors.
-for i in $DST_IPs; do
-    for j in $DST_IPs; do
-        echo -n "$i -> $j = "
-        if [[ "a$USER" == "a$SSH_USER" ]]; then
-            # Avoid sudo error when running this script already as '$SSH_USER' user that may not have sudo rights.
-            ssh $i "ssh $j hostname"
-        else
-            sudo -u $SSH_USER -s -- ssh $i "ssh $j hostname"
-        fi
-    done
-done
-
-echo "All done."
-
-
-}
 
 setupMainYml(){
 
