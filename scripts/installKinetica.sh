@@ -38,9 +38,9 @@ MAIN_YML_FILE="main.yml"
 #Time out in seconds to wait for all machines to come up
 declare -i HOST_CHECK_TIMEOUT=300
 
+#Formatting drives script
+
 cat > inputs2.sh << 'END'
-
-
 
 prepare_unmounted_volumes()
 {
@@ -117,6 +117,90 @@ prepare_disk()
 
   fi
 }
+
+END
+
+#Setup ssh user to do passworld less ssh script
+
+cat > sshUserSetup.sh << 'END'
+
+setupKeys(){
+VM_NAME_PREFIX=$2
+VMSS_NUM_LENGTH=6
+declare -i NUM_VMS=$3
+#Remove existing keys
+[ -e ~/.ssh/id_rsa ] && rm ~/.ssh/id_rsa*
+ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+
+SSH_USER_HOME=$(eval echo ~)
+SSH_KEY_DIR=$SSH_USER_HOME/.ssh
+PUB_KEYFILE=$SSH_KEY_DIR/id_rsa.pub
+AUTH_KEYFILE=$SSH_KEY_DIR/authorized_keys
+KNOWN_HOSTS_FILE=$SSH_KEY_DIR/known_hosts
+
+declare -a DST_IPs
+
+    i=0
+    while [ $i -lt "$NUM_VMS" ]; do
+      DST_IPs[$i]=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
+      let i=$i+1
+    done
+
+echo ${DST_IPs[*]}
+
+if [ ! -f $AUTH_KEYFILE ]; then
+    echo "Creating : $AUTH_KEYFILE"
+    cat $PUB_KEYFILE >> $AUTH_KEYFILE
+elif ! grep -F "$(cat $PUB_KEYFILE)" $AUTH_KEYFILE > /dev/null ; then
+    echo "Updating : $AUTH_KEYFILE"
+    cat $PUB_KEYFILE >> $AUTH_KEYFILE
+fi
+
+#sudo chown $SSH_USER:$SSH_USER $AUTH_KEYFILE
+sudo chmod 644 $AUTH_KEYFILE
+
+sudo touch $KNOWN_HOSTS_FILE
+#sudo chown $SSH_USER:$SSH_USER $KNOWN_HOSTS_FILE
+sudo chmod 644 $KNOWN_HOSTS_FILE
+
+# Attempt to do passwordless ssh if they have 'sshpass' installed,cat
+# else they will hopefully have passwordless ssh already configured
+# or they will have to type the password over and over.
+export SSHPASS="$1"
+SSHPASS_CMD="sshpass -e"
+
+
+for i in ${DST_IPs[@]}; do
+    echo "---------------------------------------------------------"
+    echo "Copying ssh keys to $i"
+    echo "---------------------------------------------------------"
+
+    $SSHPASS_CMD  rsync -avr "$SSH_KEY_DIR/." "$i:$SSH_KEY_DIR/."
+
+
+    # Make these hosts known to us, gets all public keys for all users.
+    KNOWN_HOST_STR=$(ssh-keyscan $i)
+
+    if ! grep -F "$KNOWN_HOST_STR" $KNOWN_HOSTS_FILE > /dev/null; then
+        echo $KNOWN_HOST_STR >> $SSH_KEY_DIR/known_hosts
+    fi
+
+    echo
+done
+
+# After assembling the list of 'known_hosts', redistribute the list to everybody.
+for i in $DST_IPs; do
+    $SSHPASS_CMD  rsync -ar "$SSH_KEY_DIR/." "$i:$SSH_KEY_DIR/."
+done
+
+
+echo "All done."
+
+
+}
+
+setupKeys $1 $2 $3
+
 
 END
 
@@ -257,6 +341,7 @@ setupMainYml(){
   sed -i "s/kineticadb_enable_caravel: \"\"/kineticadb_enable_caravel: \"${ENABLE_CARAVEL}\"/g" $MAIN_YML_FILE
   sed -i "s/kineticadb_enable_odbc_connector: \"\"/kineticadb_enable_odbc_connector: \"${ENABLE_ODBC}\"/g" $MAIN_YML_FILE
   sed -i "s/kineticadb_enable_kibana_connector: \"\"/kineticadb_enable_kibana_connector: \"${ENABLE_KIBANA}\"/g" $MAIN_YML_FILE
+  sed -i "s/kineticadb_enable_kibana_connector: \"\"/kineticadb_enable_kibana_connector: \"${ENABLE_KIBANA}\"/g" $MAIN_YML_FILE
 
 }
 
@@ -295,7 +380,7 @@ getFirstNode(){
        checkAllNodesUp
        setNumGPU
        log "Found the following number of GPUS: $NUM_GPU"
-       setupKeys
+       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh.sh $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS"
        setupMainYml
        launchAnsible
     else
