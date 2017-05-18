@@ -139,7 +139,7 @@ log() {
 
 
 
-
+sshKeySetup(){
 export SSHPASS="$1"
 VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
@@ -211,6 +211,7 @@ done
 
 log "All done."
 
+}
 
 
 END
@@ -310,7 +311,7 @@ getFirstNode(){
        checkAllNodesUp
        setNumGPU
        log "Found the following number of GPUS: $NUM_GPU"
-       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>kinetica-ssh-setup.log"
+       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh; sshKeySetup $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>kinetica-ssh-setup.log"
        setupMainYml
        launchAnsible
     else
