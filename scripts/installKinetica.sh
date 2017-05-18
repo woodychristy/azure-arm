@@ -311,7 +311,9 @@ getFirstNode(){
        checkAllNodesUp
        setNumGPU
        log "Found the following number of GPUS: $NUM_GPU"
-       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh; sshKeySetup $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>kinetica-ssh-setup.log"
+       log "------- sshUserSetup.sh starting -------"
+       sudo su $SSH_USER bash -c "source ./sshUserSetup.sh; sshKeySetup $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
+       log "------- sshUserSetup.sh fineshed -------"
        setupMainYml
        launchAnsible
     else
