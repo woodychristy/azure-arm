@@ -239,7 +239,7 @@ cat $GPUB_TMP_KEYFILE > $GPUDB_TMP_AUTH_KEYFILE
 for i in ${DST_IPs[@]}; do
 
   ssh $i  mkdir -p $GPUDB_TMP_SSH_FOLDER
-  ssh $i  chmod 755 $GPUDB_TMP_SSH_FOLDER 
+  ssh $i  sudo chmod 755 $GPUDB_TMP_SSH_FOLDER 
 #Remove existing keys
   ssh $i[ -e $GPUDB_USER_HOME/.ssh/id_rsa ] && rm $GPUDB_KEY_DIR/id_rsa*
 
@@ -253,7 +253,7 @@ for i in ${DST_IPs[@]}; do
   ssh $i sudo chmod 600 $GPUDB_TMP_SSH_FOLDER/id_rsa
   ssh $i sudo cp -r $GPUDB_TMP_SSH_FOLDER/. $GPUDB_KEY_DIR/.
   ssh $i sudo chown -R gpudb:gpudb $GPUDB_KEY_DIR/.
-  ssh $i sudo rm -rf $GPUDB_TMP_SSH_FOLDER
+  #ssh $i sudo rm -rf $GPUDB_TMP_SSH_FOLDER
 done
 
 log "All done."
