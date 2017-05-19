@@ -201,7 +201,7 @@ for i in ${DST_IPs[@]}; do
 
 
     # Make these hosts known to us, gets all public keys for all users.
-    KNOWN_HOST_STR=$(ssh-keyscan $i)
+    KNOWN_HOST_STR=$(ssh-keyscan -t rsa $i)
 
     if ! grep -F "$KNOWN_HOST_STR" $KNOWN_HOSTS_FILE > /dev/null; then
         echo $KNOWN_HOST_STR >> $SSH_KEY_DIR/known_hosts
