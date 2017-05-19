@@ -195,7 +195,7 @@ SSHPASS_CMD="sshpass -e"
 for i in ${DST_IPs[@]}; do
    #get keys by just logging in
 
-    $SSHPASS_CMD ssh -o StrictHostKeyChecking=no hostname
+    $SSHPASS_CMD ssh -o StrictHostKeyChecking=no $i hostname
    
     log "---------------------------------------------------------"
     log "Copying ssh keys to $i"
