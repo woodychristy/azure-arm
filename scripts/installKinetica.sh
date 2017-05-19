@@ -240,6 +240,7 @@ cat $GPUB_TMP_KEYFILE > $GPUDB_TMP_AUTH_KEYFILE
 for i in ${DST_IPs[@]}; do
 
   ssh $i  mkdir -p $GPUDB_TMP_SSH_FOLDER
+  ssh $i  chmod 755 $GPUDB_TMP_SSH_FOLDER 
   #copy
 
   rsync -avr "$GPUDB_TMP_SSH_FOLDER/." "$i:$GPUDB_TMP_SSH_FOLDER/."
