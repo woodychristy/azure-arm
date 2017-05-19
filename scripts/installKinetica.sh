@@ -227,8 +227,7 @@ GPUDB_TMP_SSH_FOLDER="/tmp/gpudbssh"
 GPUDB_TMP_AUTH_KEYFILE=$GPUDB_TMP_SSH_FOLDER/authorized_keys
 GPUB_TMP_KEYFILE=$GPUDB_TMP_SSH_FOLDER/id_rsa.pub
 
-#Remove existing keys
-[ -e $GPUDB_USER_HOME/.ssh/id_rsa ] && rm $GPUDB_KEY_DIR/id_rsa*
+
 
 mkdir -p $GPUDB_TMP_SSH_FOLDER
 
@@ -241,6 +240,10 @@ for i in ${DST_IPs[@]}; do
 
   ssh $i  mkdir -p $GPUDB_TMP_SSH_FOLDER
   ssh $i  chmod 755 $GPUDB_TMP_SSH_FOLDER 
+#Remove existing keys
+  ssh $i[ -e $GPUDB_USER_HOME/.ssh/id_rsa ] && rm $GPUDB_KEY_DIR/id_rsa*
+
+
   #copy
 
   rsync -avr "$GPUDB_TMP_SSH_FOLDER/." "$i:$GPUDB_TMP_SSH_FOLDER/."
