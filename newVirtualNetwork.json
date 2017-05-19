@@ -94,7 +94,8 @@
             "revealEndPort": 50399,
             "revealBackEndPort": 8088
         },
-        "installKinetica": "[concat( parameters('scriptsUri'), 'installKinetica.sh')]"
+        "installKinetica": "[concat( parameters('scriptsUri'), 'installKinetica.sh')]",
+        "singleQuote": "'"
     },
     "resources": [
         {
@@ -298,7 +299,7 @@
                                         ]
                                     },
                                     "protectedSettings": {
-                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',parameters('adminPassword'),' ',parameters('vmSKU')) ]"
+                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU')) ]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
