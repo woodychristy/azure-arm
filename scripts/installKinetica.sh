@@ -234,6 +234,8 @@ mkdir -p $GPUDB_TMP_SSH_FOLDER
 ssh-keygen -t rsa -N "" -f $GPUDB_TMP_SSH_FOLDER/id_rsa
 #Make a copy of good known hosts file 
 cp $KNOWN_HOSTS_FILE $GPUDB_TMP_SSH_FOLDER/.
+#Need to replace user with gpudb
+sed -i "s/${USER}/gpudb/g" $GPUDB_TMP_KEYFILE
 cat $GPUB_TMP_KEYFILE > $GPUDB_TMP_AUTH_KEYFILE
 
 for i in ${DST_IPs[@]}; do
@@ -252,7 +254,7 @@ for i in ${DST_IPs[@]}; do
  
   ssh $i sudo cp $GPUDB_TMP_SSH_FOLDER/* $GPUDB_KEY_DIR/.
   ssh $i sudo chown -R gpudb:gpudb $GPUDB_KEY_DIR/.
-  ssh $i sudo chmod -R 644 $GPUDB_KEY_DIR/
+  ssh $i sudo chmod -R 644 $GPUDB_KEY_DIR/*
   ssh $i sudo chmod 600 $GPUDB_KEY_DIR/id_rsa
   
   #ssh $i sudo rm -rf $GPUDB_TMP_SSH_FOLDER
