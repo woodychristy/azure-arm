@@ -193,6 +193,10 @@ SSHPASS_CMD="sshpass -e"
 
 
 for i in ${DST_IPs[@]}; do
+   #get keys by just logging in
+
+    $SSHPASS_CMD ssh -o StrictHostKeyChecking=no hostname
+   
     log "---------------------------------------------------------"
     log "Copying ssh keys to $i"
     log "---------------------------------------------------------"
@@ -211,6 +215,10 @@ for i in ${DST_IPs[@]}; do
 done
 
 # After assembling the list of 'known_hosts', redistribute the list to everybody.
+for i in $DST_IPs; do
+    $SSHPASS_CMD  rsync -ar "$SSH_KEY_DIR/." "$i:$SSH_KEY_DIR/."
+done
+
 for i in $DST_IPs; do
     $SSHPASS_CMD  rsync -ar "$SSH_KEY_DIR/." "$i:$SSH_KEY_DIR/."
 done
