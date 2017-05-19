@@ -145,6 +145,12 @@ export SSHPASS="$1"
 VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
 declare -i NUM_VMS=$3
+
+#Log input params for debugging
+log $SSHPAS
+log VM_NAME_PREFIX
+log NUM_VMS
+
 #Remove existing keys
 [ -e ~/.ssh/id_rsa ] && rm ~/.ssh/id_rsa*
 ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
