@@ -146,7 +146,7 @@ VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
 declare -i NUM_VMS=$3
 
-
+log "SSH Password is $SSHPASS"
 
 #Remove existing keys
 [ -e ~/.ssh/id_rsa ] && rm ~/.ssh/id_rsa*
@@ -378,8 +378,8 @@ getFirstNode(){
        touch /tmp/kinetica-ssh-setup.log
        chmod 777 /tmp/kinetica-ssh-setup.log
        sudo su $SSH_USER bash -c "source /tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
-       log "------- sshUserSetup.sh finished -------"
-       
+       log "------- sshUserSetup.sh finished -------"ƒ
+       launchAnsible
        
     else
        log "------- Not the first node exiting -------"
