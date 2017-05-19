@@ -320,13 +320,16 @@ getFirstNode(){
        getHostnames 
        checkAllNodesUp
        setNumGPU
+       setupMainYml
        log "Found the following number of GPUS: $NUM_GPU"
+       log "Sleeping 30 seconds to ensure networks are up"
+       sleep 30
        log "------- sshUserSetup.sh starting -------"
        touch /tmp/kinetica-ssh-setup.log
        chmod 777 /tmp/kinetica-ssh-setup.log
        sudo su $SSH_USER bash -c "source /tmp/sshUserSetup.sh $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
-       log "------- sshUserSetup.sh fineshed -------"
-       setupMainYml
+       log "------- sshUserSetup.sh finished -------"
+       
        launchAnsible
     else
        log "------- Not the first node exiting -------"
