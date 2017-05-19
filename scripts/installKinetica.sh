@@ -377,10 +377,10 @@ getFirstNode(){
        log "------- sshUserSetup.sh starting -------"
        touch /tmp/kinetica-ssh-setup.log
        chmod 777 /tmp/kinetica-ssh-setup.log
-       sudo su $SSH_USER bash -c "source /tmp/sshUserSetup.sh $SSH_PASSWORD $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
+       sudo su $SSH_USER bash -c "source /tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
        log "------- sshUserSetup.sh finished -------"
        
-       launchAnsible
+       
     else
        log "------- Not the first node exiting -------"
     fi
