@@ -257,7 +257,13 @@ for i in ${DST_IPs[@]}; do
   ssh $i sudo chmod -R 644 $GPUDB_KEY_DIR/
   ssh $i sudo chmod  744 $GPUDB_KEY_DIR
   ssh $i sudo chmod 600 $GPUDB_KEY_DIR/id_rsa
+  #wait till everything is all done
+  wait
   
+done
+
+#cleanup
+for i in ${DST_IPs[@]}; do
   ssh $i sudo rm -rf $GPUDB_TMP_SSH_FOLDER
 done
 
