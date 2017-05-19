@@ -126,7 +126,7 @@ END
 
 cat > /tmp/sshUserSetup.sh << 'END'
 
-
+#!/bin/bash
 LOG_FILE="/tmp/kinetica-ssh-setup.log"
 
 # manually set EXECNAME because this file is called from another script and it $0 contains a 
@@ -167,20 +167,20 @@ declare -a DST_IPs
     done
 
 
-if [ ! -f $AUTH_KEYFILE ]; then
+if [ ! -f "$AUTH_KEYFILE" ]; then
     log "Creating : $AUTH_KEYFILE"
-    cat $PUB_KEYFILE >> $AUTH_KEYFILE
-elif ! grep -F "$(cat $PUB_KEYFILE)" $AUTH_KEYFILE > /dev/null ; then
+    cat "$PUB_KEYFILE" >> "$AUTH_KEYFILE"
+elif ! grep -F "$(cat "$PUB_KEYFILE")" "$AUTH_KEYFILE" > /dev/null ; then
     log "Updating : $AUTH_KEYFILE"
-    cat $PUB_KEYFILE >> $AUTH_KEYFILE
+    cat "$PUB_KEYFILE" >> "$AUTH_KEYFILE"
 fi
 
-#sudo chown $SSH_USER:$SSH_USER $AUTH_KEYFILE
-chmod 644 $AUTH_KEYFILE
 
-touch $KNOWN_HOSTS_FILE
-#sudo chown $SSH_USER:$SSH_USER $KNOWN_HOSTS_FILE
-chmod 644 $KNOWN_HOSTS_FILE
+chmod 644 "$AUTH_KEYFILE"
+
+touch "$KNOWN_HOSTS_FILE"
+#sudo chown $SSH_USER:$SSH_USER "$KNOWN_HOSTS_FILE"
+chmod 644 "$KNOWN_HOSTS_FILE"
 
 # Attempt to do passwordless ssh if they have 'sshpass' installed,cat
 # else they will hopefully have passwordless ssh already configured
@@ -189,10 +189,10 @@ chmod 644 $KNOWN_HOSTS_FILE
 SSHPASS_CMD="sshpass -e"
 
 
-for i in ${DST_IPs[@]}; do
+for i in "${DST_IPs[@]}"; do
    #get keys by just logging in
 
-    $SSHPASS_CMD ssh -o StrictHostKeyChecking=no $i hostname
+    $SSHPASS_CMD ssh -o StrictHostKeyChecking=no "$i" hostname
    
     log "---------------------------------------------------------"
     log "Copying ssh keys to $i"
@@ -202,17 +202,17 @@ for i in ${DST_IPs[@]}; do
 
 
     # Make these hosts known to us, gets all public keys for all users.
-    KNOWN_HOST_STR=$(ssh-keyscan -t rsa $i)
+    KNOWN_HOST_STR=$(ssh-keyscan -t rsa "$i")
 
-    if ! grep -F "$KNOWN_HOST_STR" $KNOWN_HOSTS_FILE > /dev/null; then
-        echo $KNOWN_HOST_STR >> $SSH_KEY_DIR/known_hosts
+    if ! grep -F "$KNOWN_HOST_STR" "$KNOWN_HOSTS_FILE" > /dev/null; then
+        echo "$KNOWN_HOST_STR" >> "$SSH_KEY_DIR/known_hosts"
     fi
 
     
 done
 
 # After assembling the list of 'known_hosts', redistribute the list to everybody.
-for i in $DST_IPs; do
+for i in "${DST_IPs[@]}"; do
     $SSHPASS_CMD  rsync -ar "$SSH_KEY_DIR/." "$i:$SSH_KEY_DIR/."
 done
 
@@ -233,17 +233,17 @@ mkdir -p $GPUDB_TMP_SSH_FOLDER
 
 ssh-keygen -t rsa -N "" -f $GPUDB_TMP_SSH_FOLDER/id_rsa
 #Make a copy of good known hosts file 
-cp $KNOWN_HOSTS_FILE $GPUDB_TMP_SSH_FOLDER/.
+cp "$KNOWN_HOSTS_FILE" "$GPUDB_TMP_SSH_FOLDER/."
 #Need to replace user with gpudb
 sed -i "s/${USER}/gpudb/g" $GPUB_TMP_KEYFILE
 cat $GPUB_TMP_KEYFILE > $GPUDB_TMP_AUTH_KEYFILE
 
-for i in ${DST_IPs[@]}; do
+for i in "${DST_IPs[@]}"; do
 
-  ssh $i  mkdir -p $GPUDB_TMP_SSH_FOLDER
-  ssh $i  sudo chmod 755 $GPUDB_TMP_SSH_FOLDER 
+  ssh "$i"  mkdir -p $GPUDB_TMP_SSH_FOLDER
+  ssh "$i"  sudo chmod 755 $GPUDB_TMP_SSH_FOLDER 
 #Remove existing keys
-  ssh $i  [ -e $GPUDB_USER_HOME/.ssh/id_rsa ] && rm $GPUDB_KEY_DIR/id_rsa*
+  ssh" $i"  [ -e "$GPUDB_USER_HOME/.ssh/id_rsa" ] && rm "$GPUDB_KEY_DIR/id_rsa*"
 
 
   #copy
@@ -252,23 +252,22 @@ for i in ${DST_IPs[@]}; do
 
   #permissions
  
-  ssh $i sudo cp $GPUDB_TMP_SSH_FOLDER/* $GPUDB_KEY_DIR/.
-  ssh $i sudo chown -R gpudb:gpudb $GPUDB_KEY_DIR/.
-  ssh $i sudo chmod -R 644 $GPUDB_KEY_DIR/
-  ssh $i sudo chmod  744 $GPUDB_KEY_DIR
-  ssh $i sudo chmod 600 $GPUDB_KEY_DIR/id_rsa
+  ssh "$i" sudo cp $GPUDB_TMP_SSH_FOLDER/* "$GPUDB_KEY_DIR/."
+  ssh "$i" sudo chown -R gpudb:gpudb "$GPUDB_KEY_DIR/."
+  ssh "$i" sudo chmod -R 644 "$GPUDB_KEY_DIR/"
+  ssh "$i" sudo chmod  744 "$GPUDB_KEY_DIR"
+  ssh "$i" sudo chmod 600 "$GPUDB_KEY_DIR/id_rsa"
   #wait till everything is all done
   wait
   
 done
 
 #cleanup
-for i in ${DST_IPs[@]}; do
-  ssh $i sudo rm -rf $GPUDB_TMP_SSH_FOLDER
+for i in "${DST_IPs[@]}"; do
+  ssh "$i" sudo rm -rf $GPUDB_TMP_SSH_FOLDER
 done
 
 log "All done."
-
 
 
 
