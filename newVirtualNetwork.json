@@ -240,7 +240,7 @@
                             }
                         ],
                         "imageReference": {
-                            "id": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/WOODYTESTSHAREDRESOURCES/providers/Microsoft.Compute/images/UbuntuBase1604"
+                            "id": "/Subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/Providers/Microsoft.Compute/Locations/southcentralus/Publishers/cloudera/ArtifactTypes/VMImage/Offers/cloudera-centos-os/Skus/7_2/Versions/1.0.8"
                         }
                     },
                     "osProfile": {
