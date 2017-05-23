@@ -25,6 +25,8 @@ ENABLE_CARAVEL=$5
 ENABLE_KIBANA=$6
 SSH_USER=$7
 SSH_PASSWORD=$8
+
+SUDO_CMD=="echo ${SSH_PASSWORD}|sudo -S"
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
 declare -i NUM_GPU=0
@@ -145,8 +147,8 @@ export SSHPASS="$1"
 VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
 declare -i NUM_VMS=$3
+SUDO_CMD=="echo ${SSHPASS}|sudo -S"
 
-log "SSH Password is $SSHPASS"
 
 #Remove existing keys
 [ -e ~/.ssh/id_rsa ] && rm ~/.ssh/id_rsa*
@@ -179,7 +181,7 @@ fi
 chmod 644 "$AUTH_KEYFILE"
 
 touch "$KNOWN_HOSTS_FILE"
-#sudo chown $SSH_USER:$SSH_USER "$KNOWN_HOSTS_FILE"
+#eval ${SUDO_CMD} chown $SSH_USER:$SSH_USER "$KNOWN_HOSTS_FILE"
 chmod 644 "$KNOWN_HOSTS_FILE"
 
 # Attempt to do passwordless ssh if they have 'sshpass' installed,cat
@@ -192,7 +194,7 @@ SSHPASS_CMD="sshpass -e"
 for i in "${DST_IPs[@]}"; do
    #get keys by just logging in
 
-    $SSHPASS_CMD ssh -o StrictHostKeyChecking=no "$i" hostname
+    $SSHPASS_CMD ssh -t -o StrictHostKeyChecking=no "$i" hostname
    
     log "---------------------------------------------------------"
     log "Copying ssh keys to $i"
@@ -240,10 +242,10 @@ cat $GPUB_TMP_KEYFILE > $GPUDB_TMP_AUTH_KEYFILE
 
 for i in "${DST_IPs[@]}"; do
 
-  ssh "$i"  mkdir -p $GPUDB_TMP_SSH_FOLDER
-  ssh "$i"  sudo chmod 755 $GPUDB_TMP_SSH_FOLDER 
+  ssh -t "$i"  mkdir -p $GPUDB_TMP_SSH_FOLDER
+  ssh -t "$i"  eval ${SUDO_CMD} chmod 755 $GPUDB_TMP_ssh -t_FOLDER 
 #Remove existing keys
-  ssh" $i"  [ -e "$GPUDB_USER_HOME/.ssh/id_rsa" ] && rm "$GPUDB_KEY_DIR/id_rsa*"
+  ssh -t "$i"  [ -e "$GPUDB_USER_HOME/.ssh/id_rsa" ] && rm "$GPUDB_KEY_DIR/id_rsa*"
 
 
   #copy
@@ -252,11 +254,11 @@ for i in "${DST_IPs[@]}"; do
 
   #permissions
  
-  ssh "$i" sudo cp $GPUDB_TMP_SSH_FOLDER/* "$GPUDB_KEY_DIR/."
-  ssh "$i" sudo chown -R gpudb:gpudb "$GPUDB_KEY_DIR/."
-  ssh "$i" sudo chmod -R 644 "$GPUDB_KEY_DIR/"
-  ssh "$i" sudo chmod  744 "$GPUDB_KEY_DIR"
-  ssh "$i" sudo chmod 600 "$GPUDB_KEY_DIR/id_rsa"
+  ssh -t "$i" eval ${SUDO_CMD} cp $GPUDB_TMP_SSH_FOLDER/* "$GPUDB_KEY_DIR/."
+  ssh -t "$i" eval ${SUDO_CMD} chown -R gpudb:gpudb "$GPUDB_KEY_DIR/."
+  ssh -t "$i" eval ${SUDO_CMD} chmod -R 644 "$GPUDB_KEY_DIR/"
+  ssh -t "$i" eval ${SUDO_CMD} chmod  744 "$GPUDB_KEY_DIR"
+  ssh -t "$i" eval ${SUDO_CMD} chmod 600 "$GPUDB_KEY_DIR/id_rsa"
   #wait till everything is all done
   wait
   
@@ -264,7 +266,7 @@ done
 
 #cleanup
 for i in "${DST_IPs[@]}"; do
-  ssh "$i" sudo rm -rf $GPUDB_TMP_SSH_FOLDER
+  ssh -t "$i" eval ${SUDO_CMD} rm -rf $GPUDB_TMP_SSH_FOLDER
 done
 
 log "All done."
@@ -347,7 +349,7 @@ getHostnames(){
     while [ $i -lt "$NUM_VMS" ]; do
       MACHINE_NAME=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
       #Populate inventory file
-      sudo echo "$MACHINE_NAME" >>$INVENTORY_FILE
+      eval ${SUDO_CMD} echo "$MACHINE_NAME" >>$INVENTORY_FILE
       let i=$i+1
     done  
 
@@ -364,7 +366,7 @@ getFirstNode(){
 
     if [[ "$host" == "$firstNode" ]]; then
        log "------- First node! Generating hostnames and running install -------"
-       sudo mkdir -p $INVENTORY_FILE_DIR
+       eval ${SUDO_CMD} mkdir -p $INVENTORY_FILE_DIR
        #delete inventory file if it exists
        [ -e $INVENTORY_FILE ]  && rm $INVENTORY_FILE
        getHostnames 
@@ -377,7 +379,7 @@ getFirstNode(){
        log "------- sshUserSetup.sh starting -------"
        touch /tmp/kinetica-ssh-setup.log
        chmod 777 /tmp/kinetica-ssh-setup.log
-       sudo su $SSH_USER bash -c "source /tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
+       eval ${SUDO_CMD} su $SSH_USER bash -c "source /tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
        log "------- sshUserSetup.sh finished -------"ƒ
        launchAnsible
        
@@ -392,7 +394,7 @@ log "------- prepareDrives.sh starting -------"
 #Debugging need to set this world writeable
 chmod 777 $LOG_FILE
 
-sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
+eval ${SUDO_CMD} bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
 log "------- prepareDrivess.sh succeeded -------"
  
