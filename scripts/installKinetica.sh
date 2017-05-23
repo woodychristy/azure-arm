@@ -26,7 +26,7 @@ ENABLE_KIBANA=$6
 SSH_USER=$7
 SSH_PASSWORD=$8
 
-SUDO_CMD=="echo ${SSH_PASSWORD}|sudo -S"
+SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S"
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
 declare -i NUM_GPU=0
@@ -147,7 +147,7 @@ export SSHPASS="$1"
 VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
 declare -i NUM_VMS=$3
-SUDO_CMD=="echo ${SSHPASS}|sudo -S"
+SUDO_CMD==echo ${SSHPASS}|sudo -S"
 
 
 #Remove existing keys
@@ -183,10 +183,6 @@ chmod 644 "$AUTH_KEYFILE"
 touch "$KNOWN_HOSTS_FILE"
 #eval ${SUDO_CMD} chown $SSH_USER:$SSH_USER "$KNOWN_HOSTS_FILE"
 chmod 644 "$KNOWN_HOSTS_FILE"
-
-# Attempt to do passwordless ssh if they have 'sshpass' installed,cat
-# else they will hopefully have passwordless ssh already configured
-# or they will have to type the password over and over.
 
 SSHPASS_CMD="sshpass -e"
 
