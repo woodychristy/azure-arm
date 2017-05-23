@@ -26,7 +26,7 @@ ENABLE_KIBANA=$6
 SSH_USER=$7
 SSH_PASSWORD=$8
 
-SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S"
+SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
 declare -i NUM_GPU=0
@@ -147,7 +147,7 @@ export SSHPASS="$1"
 VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
 declare -i NUM_VMS=$3
-SUDO_CMD==echo ${SSHPASS}|sudo -S"
+SUDO_CMD="echo ${SSHPASS}|sudo -S"
 
 
 #Remove existing keys
@@ -191,7 +191,11 @@ for i in "${DST_IPs[@]}"; do
    #get keys by just logging in
 
     $SSHPASS_CMD ssh -t -o StrictHostKeyChecking=no "$i" hostname
+    #Make directory if it doesn't exist
    
+
+    $SSHPASS_CMD ssh -t "$i" mkdir "$SSH_KEY_DIR"
+    
     log "---------------------------------------------------------"
     log "Copying ssh keys to $i"
     log "---------------------------------------------------------"
@@ -375,7 +379,8 @@ getFirstNode(){
        log "------- sshUserSetup.sh starting -------"
        touch /tmp/kinetica-ssh-setup.log
        chmod 777 /tmp/kinetica-ssh-setup.log
-       eval ${SUDO_CMD} su $SSH_USER bash -c "source /tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
+       eval ${SUDO_CMD} chmod +x /tmp/sshUserSetup.sh
+       eval ${SUDO_CMD} su $SSH_USER bash -c "/tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
        log "------- sshUserSetup.sh finished -------"ƒ
        launchAnsible
        
@@ -389,7 +394,7 @@ getFirstNode(){
 log "------- prepareDrives.sh starting -------"
 #Debugging need to set this world writeable
 chmod 777 $LOG_FILE
-
+eval ${SUDO_CMD} chmod +x ./inputs2.sh
 eval ${SUDO_CMD} bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
 log "------- prepareDrivess.sh succeeded -------"
