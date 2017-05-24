@@ -26,7 +26,7 @@ ENABLE_KIBANA=$6
 SSH_USER=$7
 SSH_PASSWORD=$8
 
-SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
+export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
 declare -i NUM_GPU=0
@@ -147,7 +147,7 @@ export SSHPASS="$1"
 VM_NAME_PREFIX=$2
 VMSS_NUM_LENGTH=6
 declare -i NUM_VMS=$3
-SUDO_CMD="echo ${SSHPASS}|sudo -S"
+export SUDO_CMD="echo ${SSHPASS}|sudo -S"
 
 
 #Remove existing keys
