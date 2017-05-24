@@ -380,7 +380,7 @@ getFirstNode(){
        touch /tmp/kinetica-ssh-setup.log
        chmod 777 /tmp/kinetica-ssh-setup.log
        eval ${SUDO_CMD} chmod +x /tmp/sshUserSetup.sh
-       eval ${SUDO_CMD} su $SSH_USER bash -c "/tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
+       sudo su $SSH_USER bash -c "/tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
        log "------- sshUserSetup.sh finished -------"ƒ
        launchAnsible
        
@@ -394,8 +394,10 @@ getFirstNode(){
 log "------- prepareDrives.sh starting -------"
 #Debugging need to set this world writeable
 chmod 777 $LOG_FILE
+#set perms
 eval ${SUDO_CMD} chmod +x ./inputs2.sh
-eval ${SUDO_CMD} bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
+#password is in cache. 
+sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
 log "------- prepareDrivess.sh succeeded -------"
  
