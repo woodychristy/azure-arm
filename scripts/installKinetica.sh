@@ -373,11 +373,22 @@ sed -i -E "s/rank.*.taskcalc_gpu =.*//g" $GPUDB_CONF_FILE
 sed -i -E "s/rank.*.base_numa_node =.*//g" $GPUDB_CONF_FILE
 sed -i -E "s/rank.*.data_numa_node =.*//g" $GPUDB_CONF_FILE
 
+#Remove empty lines at end of file
+
+sed -i -e :a -e '/^\n*$/{$d;N;};/\n$/ba' $GPUDB_CONF_FILE
 
 #Setup the rest
 declare -i RANKNUM=1
 declare -i NODECOUNTER=0
 for i in "${HOST_NAMES[@]}"; do
+
+  #Set rank0 IP to internal hostname
+
+  if [ $NODECOUNTER -eq 0 ]
+  then
+   sed -i -E "s/rank0_ip_address =.*/rank0.numa_node = $i/g" $GPUDB_CONF_FILE
+  fi
+
   case "$INSTANCE_TYPE" in
     STANDARD_NC6)
      echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
