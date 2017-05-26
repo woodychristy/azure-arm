@@ -40,7 +40,7 @@ INVENTORY_FILE=$INVENTORY_FILE_DIR"hosts"
 MAIN_YML_FILE="main.yml"
 
 GPUDB_CONF_FILE="/opt/gpudb/core/etc/gpudb.conf"
-GPUDB_HOSTS_FILE"/opt/gpudb/core/etc/hostsfile"
+GPUDB_HOSTS_FILE="/opt/gpudb/core/etc/hostsfile"
 
 #Time out in seconds to wait for all machines to come up
 declare -i HOST_CHECK_TIMEOUT=300
@@ -344,14 +344,14 @@ setupMainYml(){
 
 setupGPUDBConf(){
 
-  sed -i -E "s/head_ip_address =\(.*\)/head_ip_address = ${HEAD_NODE_IP}/g" $GPUDB_CONF_FILE
-  sed -i -E "s/enable_caravel =\(.*\)/enable_caravel = ${ENABLE_CARAVEL}/g" $GPUDB_CONF_FILE
-  sed -i -E "s/enable_odbc_connector =\(.*\)/enable_odbc_connector = \"${ENABLE_ODBC}\"/g" $GPUDB_CONF_FILE
-  sed -i -E "s/persist_directory = \(.*\)/persist_directory = /data0/gpudb/persist\/g" $GPUDB_CONF_FILE
+  sed -i -E "s/head_ip_address =.*/head_ip_address = ${HEAD_NODE_IP}/g" $GPUDB_CONF_FILE
+  sed -i -E "s/enable_caravel =.*/enable_caravel = ${ENABLE_CARAVEL}/g" $GPUDB_CONF_FILE
+  sed -i -E "s/enable_odbc_connector =.*/enable_odbc_connector = ${ENABLE_ODBC}/g" $GPUDB_CONF_FILE
+  sed -i -E "s:persist_directory = .*:persist_directory = /data0/gpudb/persist:g" $GPUDB_CONF_FILE
   
   #for testing move this later
-  $SUDO_CMD mkdir -p /data0/gpudb/persist
-  $SUDO_CMD chown -R gpudb:gpudb /data0/gpudb/persist
+  eval $SUDO_CMD mkdir -p /data0/gpudb/persist
+  eval $SUDO_CMD chown -R gpudb:gpudb /data0/gpudb/persist
 
   declare -a HOST_NAMES
 
@@ -366,12 +366,12 @@ setupGPUDBConf(){
 #Setup ranks
 
 #Setup rank 0
-sed -i -E "s/rank0.numa_node =\(.*\)/rank0.numa_node = 0/g" $GPUDB_CONF_FILE
+sed -i -E "s/rank0.numa_node = .*/rank0.numa_node = 0/g" $GPUDB_CONF_FILE
 
 #Remove the other settings
-sed -i -E "s/rank\(.*\).taskcalc_gpu =\(.*\)//g" $GPUDB_CONF_FILE
-sed -i -E "s/rank\(.*\).base_numa_node =\(.*\)//g" $GPUDB_CONF_FILE
-sed -i -E "s/rank\(.*\).data_numa_node =\(.*\)//g" $GPUDB_CONF_FILE
+sed -i -E "s/rank.*.taskcalc_gpu =.*//g" $GPUDB_CONF_FILE
+sed -i -E "s/rank.*.base_numa_node =.*//g" $GPUDB_CONF_FILE
+sed -i -E "s/rank.*.data_numa_node =.*//g" $GPUDB_CONF_FILE
 
 
 #Setup the rest
@@ -380,49 +380,52 @@ declare -i NODECOUNTER=0
 for i in "${HOST_NAMES[@]}"; do
   case "$INSTANCE_TYPE" in
     STANDARD_NC6)
-     echo "rank$(RANKNUM).taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).data_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
       ;;
     STANDARD_NC12) 
-     echo "rank$(RANKNUM).taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).data_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
-     echo "rank$(RANKNUM).taskcalc_gpu = 1" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).data_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.taskcalc_gpu = 1" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
       ;;
     STANDARD_NC24)
-     echo "rank$(RANKNUM).taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).data_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
-     echo "rank$(RANKNUM).taskcalc_gpu = 1" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).data_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.taskcalc_gpu = 1" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
-     echo "rank$(RANKNUM).taskcalc_gpu = 2" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).base_numa_node = 1" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).data_numa_node = 1" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.taskcalc_gpu = 2" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.base_numa_node = 1" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.data_numa_node = 1" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
-     echo "rank$(RANKNUM).taskcalc_gpu = 3" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).base_numa_node = 1" >>$GPUDB_CONF_FILE
-     echo "rank$(RANKNUM).data_numa_node = 1" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.taskcalc_gpu = 3" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.base_numa_node = 1" >>$GPUDB_CONF_FILE
+     echo "rank$RANKNUM.data_numa_node = 1" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
       ;;
   esac
 
   #skip node 1 else add to hosts file
-   #recreate     hosts file
-      echo "127.0.0.1 slots=128 max_slots=128" >"$GPUDB_HOSTS_FILE"
+
 
    if [ $NODECOUNTER -gt 0 ]
    then
       echo "$i slots=128 max_slots=128" >>"$GPUDB_HOSTS_FILE"
+   else
+         #recreate     hosts file
+      echo "127.0.0.1 slots=128 max_slots=128" >"$GPUDB_HOSTS_FILE"
    fi
+   
   
   NODECOUNTER=$NODECOUNTER+1
 
@@ -466,7 +469,7 @@ getFirstNode(){
        getHostnames 
        checkAllNodesUp
        setNumGPU
-       setupMainYml
+       #setupMainYml
        log "Found the following number of GPUS: $NUM_GPU"
        log "Sleeping 30 seconds to ensure networks are up"
        sleep 30
@@ -476,7 +479,7 @@ getFirstNode(){
        eval ${SUDO_CMD} chmod +x /tmp/sshUserSetup.sh
        sudo su $SSH_USER bash -c "/tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
        log "------- sshUserSetup.sh finished -------"ƒ
-       launchAnsible
+       setupGPUDBConf
        
     else
        log "------- Not the first node exiting -------"
