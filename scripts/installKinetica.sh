@@ -348,10 +348,7 @@ setupGPUDBConf(){
   sed -i -E "s/enable_caravel =.*/enable_caravel = ${ENABLE_CARAVEL}/g" $GPUDB_CONF_FILE
   sed -i -E "s/enable_odbc_connector =.*/enable_odbc_connector = ${ENABLE_ODBC}/g" $GPUDB_CONF_FILE
   sed -i -E "s:persist_directory = .*:persist_directory = /data0/gpudb/persist:g" $GPUDB_CONF_FILE
-  
-  #for testing move this later
-  eval $SUDO_CMD mkdir -p /data0/gpudb/persist
-  eval $SUDO_CMD chown -R gpudb:gpudb /data0/gpudb/persist
+
 
   declare -a HOST_NAMES
 
@@ -380,13 +377,14 @@ sed -i -e :a -e '/^\n*$/{$d;N;};/\n$/ba' $GPUDB_CONF_FILE
 #Setup the rest
 declare -i RANKNUM=1
 declare -i NODECOUNTER=0
+
 for i in "${HOST_NAMES[@]}"; do
 
   #Set rank0 IP to internal hostname
 
   if [ $NODECOUNTER -eq 0 ]
   then
-   sed -i -E "s/rank0_ip_address =.*/rank0.numa_node = $i/g" $GPUDB_CONF_FILE
+   sed -i -E "s/rank0_ip_address =.*/rank0_ip_address = $i/g" $GPUDB_CONF_FILE
   fi
 
   case "$INSTANCE_TYPE" in
@@ -431,18 +429,17 @@ for i in "${HOST_NAMES[@]}"; do
 
    if [ $NODECOUNTER -gt 0 ]
    then
-      echo "$i slots=128 max_slots=128" >>"$GPUDB_HOSTS_FILE"
+      echo "$i slots=$NUM_GPU max_slots=$NUM_GPU" >>"$GPUDB_HOSTS_FILE"
    else
-         #recreate     hosts file
-      echo "127.0.0.1 slots=128 max_slots=128" >"$GPUDB_HOSTS_FILE"
+      let FIRST_HOST_GPU=$NUM_GPU+1
+      echo "$i slots=$FIRST_HOST_GPU max_slots=$FIRST_HOST_GPU" >"$GPUDB_HOSTS_FILE"
    fi
    
   
   NODECOUNTER=$NODECOUNTER+1
 
 done
-
-
+sed -i -E "s/number_of_ranks =.*/number_of_ranks = $RANKNUM/g" $GPUDB_CONF_FILE
 
 }
 
@@ -498,6 +495,10 @@ getFirstNode(){
 }
 
 
+setupPersist(){
+  eval $SUDO_CMD mkdir -p /data0/gpudb/persist
+  eval $SUDO_CMD chown -R gpudb:gpudb /data0/gpudb
+}
 
 log "------- prepareDrives.sh starting -------"
 #Debugging need to set this world writeable
@@ -509,7 +510,9 @@ sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
 log "------- prepareDrivess.sh succeeded -------"
  
-
+  
+  
+setupPersist
 
 getFirstNode 
 
