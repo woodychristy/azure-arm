@@ -58,7 +58,7 @@
         "scriptsUri": {
             "type": "string"
         },
-        "enableOdbConnector": {
+        "enableOdbcConnector": {
             "type": "bool"
         },
         "enableCaravel": {
@@ -299,7 +299,7 @@
                                         ]
                                     },
                                     "protectedSettings": {
-                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU')) ]"
+                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU')) ]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
