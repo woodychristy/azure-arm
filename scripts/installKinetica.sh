@@ -28,7 +28,7 @@ SSH_PASSWORD=$8
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
 LICENSE_KEY=${10}
-log "License Key:":$LICENSE_KEY
+
 
 export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
 
@@ -365,7 +365,8 @@ setupGPUDBConf(){
   sed -i -E "s/enable_caravel =.*/enable_caravel = ${ENABLE_CARAVEL}/g" $GPUDB_CONF_FILE
   sed -i -E "s/enable_odbc_connector =.*/enable_odbc_connector = ${ENABLE_ODBC}/g" $GPUDB_CONF_FILE
   sed -i -E "s:persist_directory = .*:persist_directory = /data0/gpudb/persist:g" $GPUDB_CONF_FILE
-  sed -i -E "s/license_key =.*/license_key = ${LICENSE_KEY}/g" $GPUDB_CONF_FILE
+  log "License Key:":${LICENSE_KEY}
+  sed -i -E "s:license_key =.*:license_key = ${LICENSE_KEY}:g" $GPUDB_CONF_FILE
   
 
 
