@@ -25,6 +25,7 @@ ENABLE_CARAVEL=$5
 ENABLE_KIBANA=$6
 SSH_USER=$7
 SSH_PASSWORD=$8
+LICENSE_KEY=$9
 
 export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
 #Upper Case Instance type for lookup
@@ -41,6 +42,20 @@ MAIN_YML_FILE="main.yml"
 
 GPUDB_CONF_FILE="/opt/gpudb/core/etc/gpudb.conf"
 GPUDB_HOSTS_FILE="/opt/gpudb/core/etc/hostsfile"
+
+
+ODBC_INI="/opt/gpudb/connectors/odbcserver/client/etc/odbc.ini"
+GISFED_ODBC_INI="/opt/gpudb/connectors/odbcserver/bin/GISFederal.GPUdbODBC.ini"
+HTTPD_NO_AUTH_CONF="/opt/gpudb/httpd/conf/noauth.conf"
+HTTPD_DATA_CONF="/opt/gpudb/httpd/conf/data.conf"
+GADMIN_PROPERTIES="/opt/gpudb/tomcat/webapps/gadmin/WEB-INF/classes/gaia.properties"
+REVEAL_CONFIG_PY="/opt/gpudb/connectors/caravel/etc/config.py"
+REVEAL_DEFAULT_JSON="/opt/gpudb/connectors/caravel/etc/default.json"
+
+#Certificates
+SSL_BASE_DIR="/opt/gpudb/ssl"
+SSL_CERT_FILE=$SSL_BASE_DIR"/cert.pem"
+SSL_KEY_FILE=$SSL_BASE_DIR"/key.pem"
 
 #Time out in seconds to wait for all machines to come up
 declare -i HOST_CHECK_TIMEOUT=300
@@ -348,6 +363,8 @@ setupGPUDBConf(){
   sed -i -E "s/enable_caravel =.*/enable_caravel = ${ENABLE_CARAVEL}/g" $GPUDB_CONF_FILE
   sed -i -E "s/enable_odbc_connector =.*/enable_odbc_connector = ${ENABLE_ODBC}/g" $GPUDB_CONF_FILE
   sed -i -E "s:persist_directory = .*:persist_directory = /data0/gpudb/persist:g" $GPUDB_CONF_FILE
+  sed -i -E "s/license_key =.*/license_key = ${LICENSE_KEY}/g" $GPUDB_CONF_FILE
+  
 
 
   declare -a HOST_NAMES
@@ -488,7 +505,8 @@ getFirstNode(){
        sudo su $SSH_USER bash -c "/tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
        log "------- sshUserSetup.sh finished -------"ƒ
        setupGPUDBConf
-       
+       #setupSSL
+       #setupAuthentication
     else
        log "------- Not the first node exiting -------"
     fi
@@ -500,6 +518,42 @@ setupPersist(){
   eval $SUDO_CMD chown -R gpudb:gpudb /data0/gpudb
 }
 
+setupSSL(){
+eval ${SUDO_CMD} mkdir -p $SSL_BASE_DIR
+eval ${SUDO_CMD} chown gpudb:gpudb $SSL_BASE_DIR
+openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout "$SSL_KEY_FILE" -out "$SSL_CERT_FILE"
+eval ${SUDO_CMD} chown gpudb:gpudb $SSL_BASE_DIR/*
+#Need to configuration for all the places this gets set to...
+
+}
+
+setupAuthentication(){
+  #Setup proxy
+  sed -i -E "s/enable_httpd_proxy =.*/enable_httpd_proxy = true/g" $GPUDB_CONF_FILE
+  sed -i -E "s/require_authentication =.*/require_authentication = true/g" $GPUDB_CONF_FILE
+  
+  #Setup ODBC Server INI
+  sed -i -E "s/UseSsl=.*/UseSsl=1/g" $ODBC_INI
+  sed -i -E "s/SSLCertFile=.*/SSLCertFile=$SSL_CERT_FILE/g" $ODBC_INI
+  #Setup ODBC Server GISFED INI
+  sed -i -E "s/UseSsl=.*/UseSsl=1/g" $GISFED_ODBC_INI
+  sed -i -E "s/SSLCertFile=.*/SSLCertFile=$SSL_CERT_FILE/g" $GISFED_ODBC_INI
+  sed -i -E "s/SslKeyFile=.*/SslKeyFile=$SSL_KEY_FILE/g" $GISFED_ODBC_INI
+
+  #HTTPD no auth conf
+   sed -i -E "s/#*SSLEngine.*/SSLEngine On/g" $HTTPD_NO_AUTH_CONF
+   sed -i -E "s/#*SSLCertificateFile.*/SSLCertificateFile $SSL_CERT_FILE/g" $HTTPD_NO_AUTH_CONF
+   sed -i -E "s/#*SSLCertificateKeyFile.*/SSLCertificateKeyFile $SSLCertificateFile/g" $HTTPD_NO_AUTH_CONF
+   sed -i -E "s/#*SSLProxyEngine.*/SSLEngine On/g" $HTTPD_NO_AUTH_CONF
+   sed -i -E "s/#*RequestHeader set X-Forwarded-Proto \"https\"/RequestHeader set X-Forwarded-Proto \"https\"/g" $HTTPD_NO_AUTH_CONF
+   
+   
+   
+
+
+  
+}
+
 log "------- prepareDrives.sh starting -------"
 #Debugging need to set this world writeable
 chmod 777 $LOG_FILE
@@ -509,15 +563,13 @@ eval ${SUDO_CMD} chmod +x ./inputs2.sh
 sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
 log "------- prepareDrivess.sh succeeded -------"
- 
-  
-  
-setupPersist
 
+setupPersist
 getFirstNode 
 
 
-
+eval ${SUDO_CMD} /etc/init.d/gpudb start
+#eval ${SUDO_CMD} systemctl enable gpudb
 
 # always `exit 0` on success
 exit 0
