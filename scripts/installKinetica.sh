@@ -27,7 +27,7 @@ SSH_USER=$7
 SSH_PASSWORD=$8
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
-LICENSE_KEY=$10
+LICENSE_KEY=${10}
 
 export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
 
