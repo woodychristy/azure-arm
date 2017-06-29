@@ -508,6 +508,7 @@ getFirstNode(){
        setupGPUDBConf
        #setupSSL
        #setupAuthentication
+       eval ${SUDO_CMD} /etc/init.d/gpudb start
     else
        log "------- Not the first node exiting -------"
     fi
@@ -569,8 +570,7 @@ setupPersist
 getFirstNode 
 
 
-eval ${SUDO_CMD} /etc/init.d/gpudb start
-#eval ${SUDO_CMD} systemctl enable gpudb
+
 
 # always `exit 0` on success
 exit 0
