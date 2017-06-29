@@ -25,11 +25,12 @@ ENABLE_CARAVEL=$5
 ENABLE_KIBANA=$6
 SSH_USER=$7
 SSH_PASSWORD=$8
-LICENSE_KEY=$9
-
-export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
+LICENSE_KEY=$10
+
+export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
+
 declare -i NUM_GPU=0
 
 #Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
