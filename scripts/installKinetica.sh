@@ -28,6 +28,7 @@ SSH_PASSWORD=$8
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
 LICENSE_KEY=${10}
+log "License Key:":$LICENSE_KEY
 
 export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
 
@@ -209,11 +210,11 @@ SSHPASS_CMD="sshpass -e"
 for i in "${DST_IPs[@]}"; do
    #get keys by just logging in
 
-    $SSHPASS_CMD ssh -t -o StrictHostKeyChecking=no "$i" hostname
+    $SSHPASS_CMD ssh -tt -o StrictHostKeyChecking=no "$i" hostname
     #Make directory if it doesn't exist
    
 
-    $SSHPASS_CMD ssh -t "$i" mkdir "$SSH_KEY_DIR"
+    $SSHPASS_CMD ssh -tt "$i" mkdir "$SSH_KEY_DIR"
     
     log "---------------------------------------------------------"
     log "Copying ssh keys to $i"
@@ -261,10 +262,10 @@ cat $GPUB_TMP_KEYFILE > $GPUDB_TMP_AUTH_KEYFILE
 
 for i in "${DST_IPs[@]}"; do
 
-  ssh -t "$i"  mkdir -p $GPUDB_TMP_SSH_FOLDER
-  ssh -t "$i"  eval ${SUDO_CMD} chmod 755 $GPUDB_TMP_ssh -t_FOLDER 
+  ssh -tt "$i"  mkdir -p $GPUDB_TMP_SSH_FOLDER
+  ssh -tt "$i"  eval ${SUDO_CMD} chmod 755 $GPUDB_TMP_SSH_FOLDER
 #Remove existing keys
-  ssh -t "$i"  [ -e "$GPUDB_USER_HOME/.ssh/id_rsa" ] && rm "$GPUDB_KEY_DIR/id_rsa*"
+  ssh -tt "$i"  [ -e "$GPUDB_USER_HOME/.ssh/id_rsa" ] && rm "$GPUDB_KEY_DIR/id_rsa*"
 
 
   #copy
@@ -273,11 +274,11 @@ for i in "${DST_IPs[@]}"; do
 
   #permissions
  
-  ssh -t "$i" eval ${SUDO_CMD} cp $GPUDB_TMP_SSH_FOLDER/* "$GPUDB_KEY_DIR/."
-  ssh -t "$i" eval ${SUDO_CMD} chown -R gpudb:gpudb "$GPUDB_KEY_DIR/."
-  ssh -t "$i" eval ${SUDO_CMD} chmod -R 644 "$GPUDB_KEY_DIR/"
-  ssh -t "$i" eval ${SUDO_CMD} chmod  744 "$GPUDB_KEY_DIR"
-  ssh -t "$i" eval ${SUDO_CMD} chmod 600 "$GPUDB_KEY_DIR/id_rsa"
+  ssh -tt "$i" eval ${SUDO_CMD} cp $GPUDB_TMP_SSH_FOLDER/* "$GPUDB_KEY_DIR/."
+  ssh -tt "$i" eval ${SUDO_CMD} chown -R gpudb:gpudb "$GPUDB_KEY_DIR/."
+  ssh -tt "$i" eval ${SUDO_CMD} chmod -R 644 "$GPUDB_KEY_DIR/"
+  ssh -tt "$i" eval ${SUDO_CMD} chmod  744 "$GPUDB_KEY_DIR"
+  ssh -tt "$i" eval ${SUDO_CMD} chmod 600 "$GPUDB_KEY_DIR/id_rsa"
   #wait till everything is all done
   wait
   
@@ -285,7 +286,7 @@ done
 
 #cleanup
 for i in "${DST_IPs[@]}"; do
-  ssh -t "$i" eval ${SUDO_CMD} rm -rf $GPUDB_TMP_SSH_FOLDER
+  ssh -tt "$i" eval ${SUDO_CMD} rm -rf $GPUDB_TMP_SSH_FOLDER
 done
 
 log "All done."
