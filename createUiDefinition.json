@@ -322,13 +322,14 @@
                             "domainNameLabel": "DNS Prefix"
                         },
                         "toolTip": {
+                            "publicIpAddress":"Only required if creating a new network.  This is used to connect to the loadbalancer.",
                             "domainNameLabel": "DNS Prefix for the Load Balancer public IP addresses.  Only needed if using a new network."
                         },
                         "options": {
                             "hideNone": true
                         },
                         "defaultValue":{
-                            "publicIpAddress":"[steps('clusterSettingsStep').clusterName]",
+                            "publicIpAddressName":"[steps('clusterSettingsStep').clusterName]",
                             "domainNameLabel":"[steps('clusterSettingsStep').clusterName]"
                         }
                     },
