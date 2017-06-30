@@ -328,7 +328,7 @@
                             "hideNone": true
                         },
                         "defaultValue":{
-                            "name":"[steps('clusterSettingsStep').clusterName]",
+                            "publicIpAddress":"[steps('clusterSettingsStep').clusterName]",
                             "domainNameLabel":"[steps('clusterSettingsStep').clusterName]"
                         }
                     },
