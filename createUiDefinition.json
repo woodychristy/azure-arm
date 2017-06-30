@@ -1,6 +1,6 @@
 {
     "handler": "Microsoft.Compute.MultiVm",
-    "version": "0.0.1-preview",
+    "version": "0.1.2-preview",
     "parameters": {
         "basics": [
             {
@@ -31,63 +31,6 @@
                     "hideConfirmation": false
                 },
                 "osPlatform": "Windows"
-            },
-            {
-                "name": "virtualNetwork",
-                "type": "Microsoft.Network.VirtualNetworkCombo",
-                "label": {
-                    "virtualNetwork": "Virtual network",
-                    "subnets": "Subnets"
-                },
-                "toolTip": {
-                    "virtualNetwork": "Virtual Network Name",
-                    "subnets": "Subnets requied for Kinetica GPUDB"
-                },
-                "defaultValue": {
-                    "name": "gpudb-vnet",
-                    "addressPrefixSize": "/28"
-                },
-                "constraints": {
-                    "minAddressPrefixSize": "/28"
-                },
-                "options": {
-                    "hideExisting": false
-                },
-                "subnets": {
-                    "privateSubnet": {
-                        "label": "Subnet Information",
-                        "constraints": {
-                            "minAddressPrefixSize": "/28",
-                            "minAddressCount": 1,
-                            "requireContiguousAddresses": false
-                        }
-                    }
-                }
-            },
-            {
-                "name": "dnsAndPublicIP",
-                "type": "Microsoft.Network.PublicIpAddressCombo",
-                "label": {
-                    "domainNameLabel": "DNS Prefix"
-                },
-                "toolTip": {
-                    "domainNameLabel": "DNS Prefix for the Load Balancer public IP addresses.  Only needed if using a new network."
-                },
-                "options": {
-                    "hideNone": true
-                }
-            },
-            {
-                "name": "loadBalancerName",
-                "type": "Microsoft.Common.TextBox",
-                "label": "Name of load balancer for internal use",
-                "defaultValue": "",
-                "toolTip": "A unique resource name for internal use for this load balancer.  Only needed if using a new newtwork.",
-                "constraints": {
-                    "required": true,
-                    "regex": "^[0-9a-zA-Z][0-9a-zA-Z-]{2,10}$",
-                    "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
-                }
             }
         ],
         "steps": [
@@ -100,6 +43,63 @@
                 },
                 "bladeTitle": "Kinetica GPUDB Cluster Provisioning",
                 "elements": [
+                    {
+                        "name": "virtualNetwork",
+                        "type": "Microsoft.Network.VirtualNetworkCombo",
+                        "label": {
+                            "virtualNetwork": "Virtual network",
+                            "subnets": "Subnets"
+                        },
+                        "toolTip": {
+                            "virtualNetwork": "Virtual Network Name",
+                            "subnets": "Subnets required for Kinetica GPUDB"
+                        },
+                        "defaultValue": {
+                            "name": "gpudb-vnet",
+                            "addressPrefixSize": "/28"
+                        },
+                        "constraints": {
+                            "minAddressPrefixSize": "/28"
+                        },
+                        "options": {
+                            "hideExisting": false
+                        },
+                        "subnets": {
+                            "privateSubnet": {
+                                "label": "Subnet Information",
+                                "constraints": {
+                                    "minAddressPrefixSize": "/28",
+                                    "minAddressCount": 1,
+                                    "requireContiguousAddresses": false
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "dnsAndPublicIP",
+                        "type": "Microsoft.Network.PublicIpAddressCombo",
+                        "label": {
+                            "domainNameLabel": "DNS Prefix"
+                        },
+                        "toolTip": {
+                            "domainNameLabel": "DNS Prefix for the Load Balancer public IP addresses.  Only needed if using a new network."
+                        },
+                        "options": {
+                            "hideNone": true
+                        }
+                    },
+                    {
+                        "name": "loadBalancerName",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Name of load balancer for internal use",
+                        "defaultValue": "",
+                        "toolTip": "A unique resource name for internal use for this load balancer.  Only needed if using a new newtwork.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[0-9a-zA-Z][0-9a-zA-Z-]{2,10}$",
+                            "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
+                        }
+                    },
                     {
                         "name": "licenseKey",
                         "type": "Microsoft.Common.TextBox",
@@ -331,14 +331,14 @@
         "outputs": {
             "adminUsername": "[basics('adminUsername')]",
             "adminPassword": "[basics('adminCredentials').password]",
-            "addressPrefix": "[basics('virtualNetwork').addressPrefix]",
-            "virtualNetworkName": "[basics('virtualNetwork').name]",
-            "vnetNewOrExisting": "[basics('virtualNetwork').newOrExisting]",
-            "subnetPrefix": "[basics('virtualNetwork').subnets.privateSubnet.addressPrefix]",
-            "virtualNetworkSubnetName": "[basics('virtualNetwork').subnets.privateSubnet.name]",
-            "existingNetworkRGName": "[basics('virtualNetwork').resourceGroup]",
-            "publicIPAddressName": "[basics('dnsAndPublicIP').domainNameLabel]",
-            "loadBalancerName": "[basics('loadBalancerName]",
+            "addressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
+            "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetwork.name]",
+            "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
+            "subnetPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
+            "virtualNetworkSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
+            "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]",
+            "publicIPAddressName": "[steps('clusterSettingsStep').dnsAndPublicIP.domainNameLabel]",
+            "loadBalancerName": "[steps('clusterSettingsStep').loadBalancerName]",
             "clusterName": "[steps('clusterSettingsStep').clusterName]",
             "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
             "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
