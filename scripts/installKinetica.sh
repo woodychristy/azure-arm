@@ -360,12 +360,17 @@ setupMainYml(){
 
 
 setupGPUDBConf(){
+  firstNode=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0);
 
-  sed -i -E "s/head_ip_address =.*/head_ip_address = ${HEAD_NODE_IP}/g" $GPUDB_CONF_FILE
+  if [ "$HEAD_NODE_IP" == "USE_FIRST_NODE"]
+  then
+    sed -i -E "s/head_ip_address =.*/head_ip_address = ${firstNode}/g" $GPUDB_CONF_FILE
+  else
+    sed -i -E "s/head_ip_address =.*/head_ip_address = ${HEAD_NODE_IP}/g" $GPUDB_CONF_FILE
+  fi
   sed -i -E "s/enable_caravel =.*/enable_caravel = ${ENABLE_CARAVEL}/g" $GPUDB_CONF_FILE
   sed -i -E "s/enable_odbc_connector =.*/enable_odbc_connector = ${ENABLE_ODBC}/g" $GPUDB_CONF_FILE
   sed -i -E "s:persist_directory = .*:persist_directory = /data0/gpudb/persist:g" $GPUDB_CONF_FILE
-  log "License Key:":${LICENSE_KEY}
   sed -i -E "s:license_key =.*:license_key = ${LICENSE_KEY}:g" $GPUDB_CONF_FILE
   
 
