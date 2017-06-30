@@ -75,7 +75,8 @@
         }
     },
     "variables": {
-       "installKinetica":"[concat( parameters('scriptsUri'), 'prepareDisks.sh')]"
+       "installKinetica":"[concat( parameters('scriptsUri'), 'prepareDisks.sh')]",
+       "singleQuote": "'"
     },
     "resources": [
         {
@@ -149,7 +150,7 @@
                                         "fileUris": [
                                             "[variables('installKinetica')]"
                                         ],
-                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('licenseKey')) ]"
+                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ','${gaia.head_ip_address}',' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU'),' ',variables('singleQuote'),parameters('licenseKey'),variables('singleQuote')) ]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
