@@ -328,7 +328,8 @@
                             "hideNone": true
                         },
                         "defaultValue":{
-                            "domainNameLable":"[steps('clusterSettingsStep').clusterName]"
+                            "name":"[steps('clusterSettingsStep').clusterName]",
+                            "domainNameLabel":"[steps('clusterSettingsStep').clusterName]"
                         }
                     },
                     {
