@@ -35,13 +35,13 @@
         ],
         "steps": [
             {
-                "name": "clusterSettingsStep",
-                "label": "Kinetica GPUDB Cluster Provisioning",
+                "name": "networkSettingsStep",
+                "label": "Kinetica GPUDB Nework Setup",
                 "subLabel": {
-                    "preValidation": "Configure the Kinetica GPUDB cluster settings",
+                    "preValidation": "Configure the settings for the network for the cluster",
                     "postValidation": "Done"
                 },
-                "bladeTitle": "Kinetica GPUDB Cluster Provisioning",
+                "bladeTitle": "Network Setup",
                 "elements": [
                     {
                         "name": "virtualNetwork",
@@ -99,7 +99,16 @@
                             "regex": "^[0-9a-zA-Z][0-9a-zA-Z-]{2,10}$",
                             "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
                         }
-                    },
+                    }
+                ],
+                "name": "clusterSettingsStep",
+                "label": "Kinetica GPUDB Cluster Provisioning",
+                "subLabel": {
+                    "preValidation": "Configure the Kinetica GPUDB cluster settings",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Kinetica GPUDB Cluster Provisioning",
+                "elements": [
                     {
                         "name": "licenseKey",
                         "type": "Microsoft.Common.TextBox",
@@ -332,13 +341,13 @@
             "adminUsername": "[basics('adminUsername')]",
             "adminPassword": "[basics('adminCredentials').password]",
             "addressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
-            "virtualNetworkName": "[steps('clusterSettingsStep').virtualNetwork.name]",
-            "vnetNewOrExisting": "[steps('clusterSettingsStep').virtualNetwork.newOrExisting]",
-            "subnetPrefix": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
-            "virtualNetworkSubnetName": "[steps('clusterSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
-            "existingNetworkRGName": "[steps('clusterSettingsStep').virtualNetwork.resourceGroup]",
-            "publicIPAddressName": "[steps('clusterSettingsStep').dnsAndPublicIP.domainNameLabel]",
-            "loadBalancerName": "[steps('clusterSettingsStep').loadBalancerName]",
+            "virtualNetworkName": "[steps('networkSettingsStep').virtualNetwork.name]",
+            "vnetNewOrExisting": "[steps('networkSettingsStep').virtualNetwork.newOrExisting]",
+            "subnetPrefix": "[steps('networkSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
+            "virtualNetworkSubnetName": "[steps('networkSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
+            "existingNetworkRGName": "[steps('networkSettingsStep').virtualNetwork.resourceGroup]",
+            "publicIPAddressName": "[steps('networkSettingsStep').dnsAndPublicIP.domainNameLabel]",
+            "loadBalancerName": "[steps('networkSettingsStep').loadBalancerName]",
             "clusterName": "[steps('clusterSettingsStep').clusterName]",
             "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
             "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
