@@ -31,7 +31,8 @@
                     "hideConfirmation": false
                 },
                 "osPlatform": "Windows"
-            }{
+            },
+            {
                 "name": "virtualNetwork",
                 "type": "Microsoft.Network.VirtualNetworkCombo",
                 "label": {
