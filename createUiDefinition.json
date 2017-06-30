@@ -35,72 +35,6 @@
         ],
         "steps": [
             {
-                "name": "networkSettingsStep",
-                "label": "Kinetica GPUDB Nework Setup",
-                "subLabel": {
-                    "preValidation": "Configure the settings for the network for the cluster",
-                    "postValidation": "Done"
-                },
-                "bladeTitle": "Network Setup",
-                "elements": [
-                    {
-                        "name": "virtualNetwork",
-                        "type": "Microsoft.Network.VirtualNetworkCombo",
-                        "label": {
-                            "virtualNetwork": "Virtual network",
-                            "subnets": "Subnets"
-                        },
-                        "toolTip": {
-                            "virtualNetwork": "Virtual Network Name",
-                            "subnets": "Subnets required for Kinetica GPUDB"
-                        },
-                        "defaultValue": {
-                            "name": "gpudb-vnet",
-                            "addressPrefixSize": "/28"
-                        },
-                        "constraints": {
-                            "minAddressPrefixSize": "/28"
-                        },
-                        "options": {
-                            "hideExisting": false
-                        },
-                        "subnets": {
-                            "privateSubnet": {
-                                "label": "Subnet Information",
-                                "constraints": {
-                                    "minAddressPrefixSize": "/28",
-                                    "minAddressCount": 1,
-                                    "requireContiguousAddresses": false
-                                }
-                            }
-                        }
-                    },
-                    {
-                        "name": "dnsAndPublicIP",
-                        "type": "Microsoft.Network.PublicIpAddressCombo",
-                        "label": {
-                            "domainNameLabel": "DNS Prefix"
-                        },
-                        "toolTip": {
-                            "domainNameLabel": "DNS Prefix for the Load Balancer public IP addresses.  Only needed if using a new network."
-                        },
-                        "options": {
-                            "hideNone": true
-                        }
-                    },
-                    {
-                        "name": "loadBalancerName",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Name of load balancer for internal use",
-                        "defaultValue": "",
-                        "toolTip": "A unique resource name for internal use for this load balancer.  Only needed if using a new newtwork.",
-                        "constraints": {
-                            "required": true,
-                            "regex": "^[0-9a-zA-Z][0-9a-zA-Z-]{2,10}$",
-                            "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
-                        }
-                    }
-                ],
                 "name": "clusterSettingsStep",
                 "label": "Kinetica GPUDB Cluster Provisioning",
                 "subLabel": {
@@ -332,6 +266,74 @@
                                     "value": false
                                 }
                             ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "networkSettingsStep",
+                "label": "Kinetica GPUDB Nework Setup",
+                "subLabel": {
+                    "preValidation": "Configure the settings for the network for the cluster",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Network Setup",
+                "elements": [
+                    {
+                        "name": "virtualNetwork",
+                        "type": "Microsoft.Network.VirtualNetworkCombo",
+                        "label": {
+                            "virtualNetwork": "Virtual network",
+                            "subnets": "Subnets"
+                        },
+                        "toolTip": {
+                            "virtualNetwork": "Virtual Network Name",
+                            "subnets": "Subnets required for Kinetica GPUDB"
+                        },
+                        "defaultValue": {
+                            "name": "gpudb-vnet",
+                            "addressPrefixSize": "/28"
+                        },
+                        "constraints": {
+                            "minAddressPrefixSize": "/28"
+                        },
+                        "options": {
+                            "hideExisting": false
+                        },
+                        "subnets": {
+                            "privateSubnet": {
+                                "label": "Subnet Information",
+                                "constraints": {
+                                    "minAddressPrefixSize": "/28",
+                                    "minAddressCount": 1,
+                                    "requireContiguousAddresses": false
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "dnsAndPublicIP",
+                        "type": "Microsoft.Network.PublicIpAddressCombo",
+                        "label": {
+                            "domainNameLabel": "DNS Prefix"
+                        },
+                        "toolTip": {
+                            "domainNameLabel": "DNS Prefix for the Load Balancer public IP addresses.  Only needed if using a new network."
+                        },
+                        "options": {
+                            "hideNone": true
+                        }
+                    },
+                    {
+                        "name": "loadBalancerName",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Name of load balancer for internal use",
+                        "defaultValue": "",
+                        "toolTip": "A unique resource name for internal use for this load balancer.  Only needed if using a new newtwork.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[0-9a-zA-Z][0-9a-zA-Z-]{2,10}$",
+                            "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
                         }
                     }
                 ]
