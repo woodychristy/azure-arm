@@ -75,7 +75,7 @@
         }
     },
     "variables": {
-       "installKinetica":"[concat( parameters('scriptsUri'), 'prepareDisks.sh')]",
+       "installKinetica":"[concat( parameters('scriptsUri'), 'installKinetica.sh')]",
        "singleQuote": "'"
     },
     "resources": [
@@ -109,10 +109,7 @@
                             }
                         ],
                         "imageReference": {
-                            "publisher": "Canonical",
-                            "offer": "UbuntuServer",
-                            "sku": "16.04-LTS",
-                            "version": "latest"
+                            "id": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/marketplaceimages/providers/Microsoft.Compute/images/centos73-kinetica601-byol"
                         }
                     },
                     "osProfile": {
