@@ -69,6 +69,9 @@
         },
         "licenseKey":{
             "type": "string"
+        },
+        "vmSpec":{
+            "type":"string"
         }
     },
     "variables": {
@@ -243,7 +246,7 @@
                             }
                         ],
                         "imageReference": {
-                            "id": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/marketplaceimages/providers/Microsoft.Compute/images/centos73-kinetica601-byol"
+                            "id": "[parameters('vmSpec')]"
                         }
                     },
                     "osProfile": {

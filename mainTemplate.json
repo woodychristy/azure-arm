@@ -25,7 +25,9 @@
                 128,
                 256,
                 512,
-                1024
+                1024,
+                2048,
+                4096
             ]
         },
         "vnetNewOrExisting": {
@@ -60,7 +62,7 @@
         "subnetPrefix": {
             "type": "string"
         },
-        "enableOdbConnector": {
+        "enableOdbcConnector": {
             "type": "bool"
         },
         "enableCaravel": {
@@ -68,6 +70,9 @@
         },
         "enableKibana": {
             "type": "bool"
+        },
+        "licenseKey": {
+            "type": "string"
         }
     },
     "variables": {
@@ -75,10 +80,12 @@
         "networkApiVersion": "2016-03-30",
         "storageApiVersion": "2015-06-15",
         "resourceApiVersion": "2015-06-15",
+        "commment": "Template base URI must be a publicly available URI so that the ARM can reach it to download linked templates and scripts.",
         "templateBaseUri": "https://raw.githubusercontent.com/woodychristy/azure-arm/master",
         "vmssTemplateUri": "[concat(variables('templateBaseUri'),'/',parameters('vnetNewOrExisting'),'VirtualNetwork.json')]",
         "scriptsUri": "[concat(variables('templateBaseUri'),'/scripts/')]",
-        "existingVnetId": "[resourceId(parameters('existingNetworkRGName'),concat('Microsoft.Network','/','virtualNetworks'),parameters('virtualNetworkName'))]"
+        "existingVnetId": "[resourceId(parameters('existingNetworkRGName'),concat('Microsoft.Network','/','virtualNetworks'),parameters('virtualNetworkName'))]",
+        "vmResourceID":"/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/marketplaceimages/providers/Microsoft.Compute/images/centos73-kinetica601-byol"
     },
     "resources": [
         {
@@ -143,14 +150,20 @@
                     "scriptsUri": {
                         "value": "[variables('scriptsUri')]"
                     },
-                    "enableOdbConnector":{
-                        "value": "[parameters('enableOdbConnector')]"
+                    "enableOdbcConnector": {
+                        "value": "[parameters('enableOdbcConnector')]"
                     },
-                    "enableCaravel":{
-                        "value": "[parameters('enableOdbConnector')]"
+                    "enableCaravel": {
+                        "value": "[parameters('enableCaravel')]"
                     },
-                    "enableKibana":{
+                    "enableKibana": {
                         "value": "[parameters('enableKibana')]"
+                    },
+                    "licenseKey": {
+                        "value": "[parameters('licenseKey')]"
+                    },
+                    "vmSpec":{
+                        "value":"[variables('vmResourceID')]"
                     }
                 }
             }

@@ -14,7 +14,7 @@
         "clusterSize": {
             "type": "int"
         },
-        "vmSKU":{
+        "vmSKU": {
             "type": "string"
         },
         "sizeOfDataDiskInGB": {
@@ -43,7 +43,7 @@
         "addressPrefix": {
             "type": "string",
             "metadata": {
-                "description":"This is only needed to align the same parameters to new vnet template"
+                "description": "This is only needed to align the same parameters to new vnet template"
             }
         },
         "virtualNetworkSubnetName": {
@@ -52,10 +52,10 @@
         "subnetPrefix": {
             "type": "string",
             "metadata": {
-                "description":"This is only needed to align the same parameters to new vnet template"
+                "description": "This is only needed to align the same parameters to new vnet template"
             }
         },
-        "existingVnetId":{
+        "existingVnetId": {
             "type": "string"
         },
         "scriptsUri": {
@@ -70,13 +70,16 @@
         "enableKibana": {
             "type": "bool"
         },
-        "licenseKey":{
+        "licenseKey": {
+            "type": "string"
+        },
+        "vmSpec": {
             "type": "string"
         }
     },
     "variables": {
-       "installKinetica":"[concat( parameters('scriptsUri'), 'installKinetica.sh')]",
-       "singleQuote": "'"
+        "installKinetica": "[concat( parameters('scriptsUri'), 'installKinetica.sh')]",
+        "singleQuote": "'"
     },
     "resources": [
         {
@@ -109,7 +112,7 @@
                             }
                         ],
                         "imageReference": {
-                            "id": "/subscriptions/fe124952-1a2e-4787-9508-1d00ec64636d/resourceGroups/marketplaceimages/providers/Microsoft.Compute/images/centos73-kinetica601-byol"
+                            "id": "[parameters('vmSpec')]"
                         }
                     },
                     "osProfile": {
@@ -160,4 +163,4 @@
             }
         }
     ]
- }
+}
