@@ -33,7 +33,7 @@
                 "osPlatform": "Windows"
             }
         ],
-        "steps": [
+        "network": [
             {
                 "name": "networkSettingsStep",
                 "label": "Kinetica GPUDB Nework Setup",
@@ -100,7 +100,11 @@
                             "validationMessage": "Cluster name must be 3 to 10 alphanumeric characters"
                         }
                     }
-                ],
+                ]
+            }
+        ],
+        "clusterSetup": [
+            {
                 "name": "clusterSettingsStep",
                 "label": "Kinetica GPUDB Cluster Provisioning",
                 "subLabel": {
@@ -340,22 +344,22 @@
         "outputs": {
             "adminUsername": "[basics('adminUsername')]",
             "adminPassword": "[basics('adminCredentials').password]",
-            "addressPrefix": "[steps('clusterSettingsStep').virtualNetwork.addressPrefix]",
-            "virtualNetworkName": "[steps('networkSettingsStep').virtualNetwork.name]",
-            "vnetNewOrExisting": "[steps('networkSettingsStep').virtualNetwork.newOrExisting]",
-            "subnetPrefix": "[steps('networkSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
-            "virtualNetworkSubnetName": "[steps('networkSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
-            "existingNetworkRGName": "[steps('networkSettingsStep').virtualNetwork.resourceGroup]",
-            "publicIPAddressName": "[steps('networkSettingsStep').dnsAndPublicIP.domainNameLabel]",
-            "loadBalancerName": "[steps('networkSettingsStep').loadBalancerName]",
-            "clusterName": "[steps('clusterSettingsStep').clusterName]",
-            "clusterSize": "[steps('clusterSettingsStep').clusterNodeCount]",
-            "vmSKU": "[steps('clusterSettingsStep').clusterVmSize]",
-            "sizeOfDataDiskInGB": "[steps('clusterSettingsStep').sizeOfDataDiskInGB]",
-            "enableOdbcConnector": "[steps('clusterSettingsStep').enableOdbcConnector]",
-            "enableCaravel": "[steps('clusterSettingsStep').enableCaravel]",
-            "enableKibana": "[steps('clusterSettingsStep').enableKibana]",
-            "licenseKey": "[steps('clusterSettingsStep').licenseKey]"
+            "addressPrefix": "[network('clusterSettingsStep').virtualNetwork.addressPrefix]",
+            "virtualNetworkName": "[network('networkSettingsStep').virtualNetwork.name]",
+            "vnetNewOrExisting": "[network('networkSettingsStep').virtualNetwork.newOrExisting]",
+            "subnetPrefix": "[network('networkSettingsStep').virtualNetwork.subnets.privateSubnet.addressPrefix]",
+            "virtualNetworkSubnetName": "[network('networkSettingsStep').virtualNetwork.subnets.privateSubnet.name]",
+            "existingNetworkRGName": "[network('networkSettingsStep').virtualNetwork.resourceGroup]",
+            "publicIPAddressName": "[network('networkSettingsStep').dnsAndPublicIP.domainNameLabel]",
+            "loadBalancerName": "[network('networkSettingsStep').loadBalancerName]",
+            "clusterName": "[clusterSetup('clusterSettingsStep').clusterName]",
+            "clusterSize": "[clusterSetup('clusterSettingsStep').clusterNodeCount]",
+            "vmSKU": "[clusterSetup('clusterSettingsStep').clusterVmSize]",
+            "sizeOfDataDiskInGB": "[clusterSetup('clusterSettingsStep').sizeOfDataDiskInGB]",
+            "enableOdbcConnector": "[clusterSetup('clusterSettingsStep').enableOdbcConnector]",
+            "enableCaravel": "[clusterSetup('clusterSettingsStep').enableCaravel]",
+            "enableKibana": "[clusterSetup('clusterSettingsStep').enableKibana]",
+            "licenseKey": "[clusterSetup('clusterSettingsStep').licenseKey]"
         }
     }
 }
