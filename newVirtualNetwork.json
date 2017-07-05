@@ -67,11 +67,11 @@
         "enableKibana": {
             "type": "bool"
         },
-        "licenseKey":{
+        "licenseKey": {
             "type": "string"
         },
-        "vmSpec":{
-            "type":"string"
+        "vmSpec": {
+            "type": "object"
         }
     },
     "variables": {
@@ -245,9 +245,7 @@
                                 "createOption": "Empty"
                             }
                         ],
-                        "imageReference": {
-                            "id": "[parameters('vmSpec')]"
-                        }
+                        "imageReference": "[parameters('vmSpec')]"
                     },
                     "osProfile": {
                         "computerNamePrefix": "[parameters('clusterName')]",
