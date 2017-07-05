@@ -222,6 +222,12 @@
                 "[concat('Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName)]",
                 "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
             ],
+            "plan":{
+                "name": "[parameters('vmSpec').sku]",
+                "product": "[parameters('vmSpec').offer]",
+                "publisher": "[parameters('vmSpec').publisher]"
+            }
+            ,
             "sku": {
                 "name": "[parameters('vmSKU')]",
                 "capacity": "[parameters('clusterSize')]"
@@ -233,6 +239,7 @@
                     "mode": "Manual"
                 },
                 "virtualMachineProfile": {
+                    
                     "storageProfile": {
                         "osDisk": {
                             "caching": "ReadOnly",
