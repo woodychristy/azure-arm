@@ -88,6 +88,11 @@
             "location": "[resourceGroup().location]",
             "apiVersion": "[parameters('computeApiVersion')]",
             "dependsOn": [],
+            "plan": {
+                "name": "[parameters('vmSpec').sku]",
+                "product": "[parameters('vmSpec').offer]",
+                "publisher": "[parameters('vmSpec').publisher]"
+            },
             "sku": {
                 "name": "[parameters('vmSKU')]",
                 "capacity": "[parameters('clusterSize')]"
@@ -111,9 +116,7 @@
                                 "createOption": "Empty"
                             }
                         ],
-                        "imageReference": {
-                            "id": "[parameters('vmSpec')]"
-                        }
+                        "imageReference": "[parameters('vmSpec')]"
                     },
                     "osProfile": {
                         "computerNamePrefix": "[parameters('clusterName')]",
