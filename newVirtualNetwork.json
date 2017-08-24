@@ -108,7 +108,7 @@
             "sshNatBackEndPort": 22,
             "adminUiNatPoolName": "[concat(variables('namingInfix'), 'adminUiNatPool')]",
             "adminUiStartPort": 8080,
-            "adminUiEndPort": 8081,
+            "adminUiEndPort": 8085,
             "adminUiBackEndPort": 8080,
             "apiNatPoolName": "[concat(variables('namingInfix'), 'apiNatPool')]",
             "apiStartPort": 9191,
