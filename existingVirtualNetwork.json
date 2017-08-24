@@ -152,8 +152,10 @@
                                     "settings": {
                                         "fileUris": [
                                             "[variables('installKinetica')]"
-                                        ],
-                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',variables('singleQuote'),'USE_FIRST_NODE',variables('singleQuote'),' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU'),' ',variables('singleQuote'),parameters('licenseKey'),variables('singleQuote')) ]"
+                                        ]
+                                    },
+                                    "protectedSettings": {
+                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',variables('singleQuote'),'USE_FIRST_NODE',variables('singleQuote'),' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU'),' ',variables('singleQuote'),parameters('licenseKey'),variables('singleQuote'),' AZURE') ]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,

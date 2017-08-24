@@ -2,6 +2,10 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.2",
     "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
         "adminUsername": {
             "type": "string"
         },
@@ -23,6 +27,10 @@
         "publicIPAddressName": {
             "type": "string",
             "defaultValue": "[concat(toLower(parameters('clusterName')),'-pip')]"
+        },
+        "publicIPAddressIsNew": {
+            "type": "bool",
+            "defaultValue": true
         },
         "loadBalancerName": {
             "type": "string",
@@ -72,6 +80,17 @@
         },
         "vmSpec": {
             "type": "object"
+        },
+        "kineticaTags": {
+            "type": "object"
+        },
+        "artifactsBase": {
+            "type": "string",
+            "metadata": {
+                "artifactsBaseUrl": "",
+                "description": "base URL at which Marketplace package files are stored. Value adjusted automatically during Marketplace submission process."
+            },
+            "defaultValue": "https://raw.githubusercontent.com/woodychristy/azure-arm/master"
         }
     },
     "variables": {
@@ -91,10 +110,10 @@
             "adminUiStartPort": 50100,
             "adminUiEndPort": 50199,
             "adminUiBackEndPort": 8080,
-            "authenticatedApiNatPoolName": "[concat(variables('namingInfix'), 'authenticatedApiNatPool')]",
-            "authenticatedApiStartPort": 50200,
-            "authenticatedApiEndPort": 50299,
-            "authenticatedApiBackEndPort": 8082,
+            "apiNatPoolName": "[concat(variables('namingInfix'), 'apiNatPool')]",
+            "apiStartPort": 50200,
+            "apiEndPort": 50299,
+            "apiBackEndPort": 9191,
             "revealNatPoolName": "[concat(variables('namingInfix'), 'revealNatPool')]",
             "revealStartPort": 50300,
             "revealEndPort": 50399,
@@ -108,7 +127,8 @@
             "apiVersion": "[parameters('resourceAPIVersion')]",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('virtualNetworkName')]",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('kineticaTags')]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -128,20 +148,22 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('networkSpec').publicIPAddressName]",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "apiVersion": "[parameters('networkApiVersion')]",
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('publicIPAddressName')]"
+                  "domainNameLabel": "[parameters('publicIPAddressName')]"
                 }
-            }
+            },
+            "condition": "[parameters('publicIPAddressIsNew')]"
         },
         {
             "type": "Microsoft.Network/loadBalancers",
             "name": "[variables('networkSpec').loadBalancerName]",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "apiVersion": "[parameters('networkApiVersion')]",
+            "tags": "[parameters('kineticaTags')]",
             "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('networkSpec').publicIPAddressName)]"
             ],
@@ -187,15 +209,15 @@
                         }
                     },
                     {
-                        "name": "[variables('networkSpec').authenticatedApiNatPoolName]",
+                        "name": "[variables('networkSpec').apiNatPoolName]",
                         "properties": {
                             "frontendIPConfiguration": {
                                 "id": "[variables('networkSpec').frontEndIPConfigID]"
                             },
                             "protocol": "tcp",
-                            "frontendPortRangeStart": "[variables('networkSpec').authenticatedApiStartPort]",
-                            "frontendPortRangeEnd": "[variables('networkSpec').authenticatedApiEndPort]",
-                            "backendPort": "[variables('networkSpec').authenticatedApiBackEndPort]"
+                            "frontendPortRangeStart": "[variables('networkSpec').apiStartPort]",
+                            "frontendPortRangeEnd": "[variables('networkSpec').apiEndPort]",
+                            "backendPort": "[variables('networkSpec').apiBackEndPort]"
                         }
                     },
                     {
@@ -216,18 +238,18 @@
         {
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[parameters('clusterName')]",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "apiVersion": "[parameters('computeApiVersion')]",
+            "tags": "[parameters('kineticaTags')]",
             "dependsOn": [
                 "[concat('Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName)]",
                 "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]"
             ],
-            "plan":{
+            "plan": {
                 "name": "[parameters('vmSpec').sku]",
                 "product": "[parameters('vmSpec').offer]",
                 "publisher": "[parameters('vmSpec').publisher]"
-            }
-            ,
+            },
             "sku": {
                 "name": "[parameters('vmSKU')]",
                 "capacity": "[parameters('clusterSize')]"
@@ -239,7 +261,6 @@
                     "mode": "Manual"
                 },
                 "virtualMachineProfile": {
-                    
                     "storageProfile": {
                         "osDisk": {
                             "caching": "ReadOnly",
@@ -285,7 +306,7 @@
                                                         "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').adminUiNatPoolName)]"
                                                     },
                                                     {
-                                                        "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').authenticatedApiNatPoolName)]"
+                                                        "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').apiNatPoolName)]"
                                                     },
                                                     {
                                                         "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').revealNatPoolName)]"
@@ -310,7 +331,7 @@
                                         ]
                                     },
                                     "protectedSettings": {
-                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU'),' ',variables('singleQuote'),parameters('licenseKey'),variables('singleQuote')) ]"
+                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU'),' ',variables('singleQuote'),parameters('licenseKey'),variables('singleQuote'),' AZURE') ]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
