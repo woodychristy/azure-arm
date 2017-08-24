@@ -28,15 +28,13 @@ SSH_PASSWORD=$8
 #Upper Case Instance type for lookup
 declare -u INSTANCE_TYPE=$9
 LICENSE_KEY=${10}
+CLOUD=${11}
 
-
-export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
 
 declare -i NUM_GPU=0
 
-#Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
-declare -i VMSS_NUM_LENGTH=6
-#Anaible file list of hosts
+
+#Ansible file list of hosts
 INVENTORY_FILE_DIR="/etc/ansible/"
 INVENTORY_FILE=$INVENTORY_FILE_DIR"hosts"
 
@@ -164,11 +162,10 @@ log() {
 
 
 export SSHPASS="$1"
-VM_NAME_PREFIX=$2
-VMSS_NUM_LENGTH=6
-declare -i NUM_VMS=$3
 export SUDO_CMD="echo ${SSHPASS}|sudo -S"
 
+INVENTORY_FILE_DIR="/etc/ansible/"
+INVENTORY_FILE=$INVENTORY_FILE_DIR"hosts"
 
 #Remove existing keys
 [ -e ~/.ssh/id_rsa ] && rm ~/.ssh/id_rsa*
@@ -182,11 +179,12 @@ KNOWN_HOSTS_FILE=$SSH_KEY_DIR/known_hosts
 
 declare -a DST_IPs
 
-    i=0
-    while [ $i -lt "$NUM_VMS" ]; do
-      DST_IPs[$i]=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
-      let i=$i+1
-    done
+
+q=0
+    while read h; do
+     DST_IPs[$q]=$h
+     let q=$q+1
+done< $INVENTORY_FILE
 
 
 if [ ! -f "$AUTH_KEYFILE" ]; then
@@ -201,7 +199,6 @@ fi
 chmod 644 "$AUTH_KEYFILE"
 
 touch "$KNOWN_HOSTS_FILE"
-#eval ${SUDO_CMD} chown $SSH_USER:$SSH_USER "$KNOWN_HOSTS_FILE"
 chmod 644 "$KNOWN_HOSTS_FILE"
 
 SSHPASS_CMD="sshpass -e"
@@ -272,9 +269,11 @@ for i in "${DST_IPs[@]}"; do
 
   rsync -avr "$GPUDB_TMP_SSH_FOLDER/." "$i:$GPUDB_TMP_SSH_FOLDER/."
 
-  #permissions
- 
+
+  #copy
   ssh -tt "$i" eval ${SUDO_CMD} cp $GPUDB_TMP_SSH_FOLDER/* "$GPUDB_KEY_DIR/."
+   #permissions
+
   ssh -tt "$i" eval ${SUDO_CMD} chown -R gpudb:gpudb "$GPUDB_KEY_DIR/."
   ssh -tt "$i" eval ${SUDO_CMD} chmod -R 644 "$GPUDB_KEY_DIR/"
   ssh -tt "$i" eval ${SUDO_CMD} chmod  744 "$GPUDB_KEY_DIR"
@@ -343,28 +342,30 @@ setNumGPU(){
     ;;
   STANDARD_NC24) NUM_GPU=4
   ;;
+  P2.XLARGE) NUM_GPU=1
+  ;;
+  P2.8XLARGE) NUM_GPU=8
+  ;;
+  P2.16XLARGE) NUM_GPU=16
+  ;;
+
   esac
 
 }
 
-
-setupMainYml(){
-
-  sed -i "s/kineticadb_head_ip_address: \"\"/kineticadb_head_ip_address: \"${HEAD_NODE_IP}\"/g" $MAIN_YML_FILE
-  sed -i "s/kineticadb_enable_caravel: \"\"/kineticadb_enable_caravel: \"${ENABLE_CARAVEL}\"/g" $MAIN_YML_FILE
-  sed -i "s/kineticadb_enable_odbc_connector: \"\"/kineticadb_enable_odbc_connector: \"${ENABLE_ODBC}\"/g" $MAIN_YML_FILE
-  sed -i "s/kineticadb_enable_kibana_connector: \"\"/kineticadb_enable_kibana_connector: \"${ENABLE_KIBANA}\"/g" $MAIN_YML_FILE
-  sed -i "s/kineticadb_enable_kibana_connector: \"\"/kineticadb_enable_kibana_connector: \"${ENABLE_KIBANA}\"/g" $MAIN_YML_FILE
-
+setupPersist(){
+  eval $SUDO_CMD mkdir -p /data0/gpudb/persist
+  eval $SUDO_CMD chown -R gpudb:gpudb /data0/gpudb
 }
 
 
-setupGPUDBConf(){
-  firstNode=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0);
 
-  if [ "$HEAD_NODE_IP" == "USE_FIRST_NODE"]
+setupGPUDBConf(){
+
+  if [ "$HEAD_NODE_IP" == "USE_FIRST_NODE" ]
   then
-    sed -i -E "s/head_ip_address =.*/head_ip_address = ${firstNode}/g" $GPUDB_CONF_FILE
+
+    sed -i -E "s/head_ip_address =.*/head_ip_address = ${FIRST_NODE}/g" $GPUDB_CONF_FILE
   else
     sed -i -E "s/head_ip_address =.*/head_ip_address = ${HEAD_NODE_IP}/g" $GPUDB_CONF_FILE
   fi
@@ -377,12 +378,12 @@ setupGPUDBConf(){
 
   declare -a HOST_NAMES
 
-    i=0
-    while [ $i -lt "$NUM_VMS" ]; do
-      HOST_NAMES[$i]=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
-      let i=$i+1
-    done
 
+    i=0
+     while read h; do
+     HOST_NAMES[$i]=$h
+     let i=$i+1
+    done< $INVENTORY_FILE
 
 
 #Setup ranks
@@ -392,8 +393,7 @@ sed -i -E "s/rank0.numa_node = .*/rank0.numa_node = 0/g" $GPUDB_CONF_FILE
 
 #Remove the other settings
 sed -i -E "s/rank.*.taskcalc_gpu =.*//g" $GPUDB_CONF_FILE
-sed -i -E "s/rank.*.base_numa_node =.*//g" $GPUDB_CONF_FILE
-sed -i -E "s/rank.*.data_numa_node =.*//g" $GPUDB_CONF_FILE
+
 
 #Remove empty lines at end of file
 
@@ -415,38 +415,81 @@ for i in "${HOST_NAMES[@]}"; do
   case "$INSTANCE_TYPE" in
     STANDARD_NC6)
      echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
       ;;
     STANDARD_NC12) 
      echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
      echo "rank$RANKNUM.taskcalc_gpu = 1" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
       ;;
     STANDARD_NC24)
      echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
      echo "rank$RANKNUM.taskcalc_gpu = 1" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.base_numa_node = 0" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.data_numa_node = 0" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
      echo "rank$RANKNUM.taskcalc_gpu = 2" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.base_numa_node = 1" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.data_numa_node = 1" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
      echo "rank$RANKNUM.taskcalc_gpu = 3" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.base_numa_node = 1" >>$GPUDB_CONF_FILE
-     echo "rank$RANKNUM.data_numa_node = 1" >>$GPUDB_CONF_FILE
      RANKNUM=$RANKNUM+1
       ;;
+     P2.XLARGE)
+      echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
+      RANKNUM=$RANKNUM+1
+     ;;
+     P2.8XLARGE)
+     echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 1" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 2" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 3" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 4" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 5" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 6" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 7" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     ;;
+     P2.16XLARGE)
+     echo "rank$RANKNUM.taskcalc_gpu = 0" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 1" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 2" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 3" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 4" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 5" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 6" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 7" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 8" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 9" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 10" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 11" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 12" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 13" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 14" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     echo "rank$RANKNUM.taskcalc_gpu = 15" >>$GPUDB_CONF_FILE
+     RANKNUM=$RANKNUM+1
+     ;;
+
   esac
 
   #skip node 1 else add to hosts file
@@ -468,20 +511,23 @@ sed -i -E "s/number_of_ranks =.*/number_of_ranks = $RANKNUM/g" $GPUDB_CONF_FILE
 
 }
 
-launchAnsible(){
-
-#enter cmd line to launch ansible here
-  log "Launching ansible"
-}
 
 getHostnames(){
+case "$CLOUD" in
+    AWS)
+      eval ${SUDO_CMD} echo "$FIRST_NODE" >>$INVENTORY_FILE
+    ;;
+    AZURE)
     i=0
     while [ $i -lt "$NUM_VMS" ]; do
       MACHINE_NAME=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d $i)
       #Populate inventory file
       eval ${SUDO_CMD} echo "$MACHINE_NAME" >>$INVENTORY_FILE
       let i=$i+1
-    done  
+    done
+    ;;
+esac
+
 
 }
 
@@ -489,12 +535,12 @@ getHostnames(){
 
 getFirstNode(){
    log "------- Determining if first node -------"
-    firstNode=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
     host=$( hostname -s )
-    log "FirstNode:""$firstNode"
+    log "FIRST_NODE:""$FIRST_NODE"
     log " Hostname:""$host"
 
-    if [[ "$host" == "$firstNode" ]]; then
+    if [[ "$host" == "$FIRST_NODE" ]]
+     then
        log "------- First node! Generating hostnames and running install -------"
        eval ${SUDO_CMD} mkdir -p $INVENTORY_FILE_DIR
        #delete inventory file if it exists
@@ -502,19 +548,44 @@ getFirstNode(){
        getHostnames 
        checkAllNodesUp
        setNumGPU
-       #setupMainYml
        log "Found the following number of GPUS: $NUM_GPU"
-       log "Sleeping 30 seconds to ensure networks are up"
-       sleep 30
-       log "------- sshUserSetup.sh starting -------"
-       touch /tmp/kinetica-ssh-setup.log
-       chmod 777 /tmp/kinetica-ssh-setup.log
-       eval ${SUDO_CMD} chmod +x /tmp/sshUserSetup.sh
-       sudo su $SSH_USER bash -c "/tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
-       log "------- sshUserSetup.sh finished -------"ƒ
+       if [[ $NUM_VMS -gt 1 ]]
+       then
+         log "Sleeping 30 seconds to ensure networks are up"
+         sleep 30
+       fi
+       if [[ "$CLOUD" == "AZURE"  ]]; then
+           log "------- sshUserSetup.sh starting -------"
+           touch /tmp/kinetica-ssh-setup.log
+           chmod 777 /tmp/kinetica-ssh-setup.log
+           eval ${SUDO_CMD} chmod +x /tmp/sshUserSetup.sh
+           sudo su $SSH_USER bash -c "/tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
+           log "------- sshUserSetup.sh finished -------"
+       fi
+       if [[ "$CLOUD" == "AWS"  ]]; then
+           log "------- Creating Local GPUDB keys -------"
+log $SUDO_CMD
+
+eval ${SUDO_CMD} rm ~gpudb/.ssh/id_rsa*
+eval ${SUDO_CMD} ssh-keygen -t rsa -N \"\" -f ~gpudb/.ssh/id_rsa
+eval ${SUDO_CMD} cat ~gpudb/.ssh/id_rsa.pub >> ~gpudb/.ssh/authorized_keys
+eval ${SUDO_CMD} chown gpudb:gpudb ~gpudb/.ssh/*
+eval ${SUDO_CMD} chmod 600 ~gpudb/.ssh/*
+
+    # Make these hosts known to us, gets all public keys for all users.
+    KNOWN_HOST_STR=$(ssh-keyscan -t rsa `hostname -s`)
+    touch ~gpudb/.ssh/known_hosts
+    chown gpudb:gpudb ~gpudb/.ssh/known_hosts
+    if ! grep -F "$KNOWN_HOST_STR" ~gpudb/.ssh/known_hosts > /dev/null; then
+        echo "$KNOWN_HOST_STR" >> ~gpudb/.ssh/known_hosts
+    fi
+eval ${SUDO_CMD} chmod 600 ~gpudb/.ssh/*
+
+
+
+           log "------- Finished with Local GPUDB Keys -------"
+       fi
        setupGPUDBConf
-       #setupSSL
-       #setupAuthentication
        eval ${SUDO_CMD} /etc/init.d/gpudb start
     else
        log "------- Not the first node exiting -------"
@@ -522,51 +593,14 @@ getFirstNode(){
 }
 
 
-setupPersist(){
-  eval $SUDO_CMD mkdir -p /data0/gpudb/persist
-  eval $SUDO_CMD chown -R gpudb:gpudb /data0/gpudb
-}
-
-setupSSL(){
-eval ${SUDO_CMD} mkdir -p $SSL_BASE_DIR
-eval ${SUDO_CMD} chown gpudb:gpudb $SSL_BASE_DIR
-openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout "$SSL_KEY_FILE" -out "$SSL_CERT_FILE"
-eval ${SUDO_CMD} chown gpudb:gpudb $SSL_BASE_DIR/*
-#Need to configuration for all the places this gets set to...
-
-}
-
-setupAuthentication(){
-  #Setup proxy
-  sed -i -E "s/enable_httpd_proxy =.*/enable_httpd_proxy = true/g" $GPUDB_CONF_FILE
-  sed -i -E "s/require_authentication =.*/require_authentication = true/g" $GPUDB_CONF_FILE
-  
-  #Setup ODBC Server INI
-  sed -i -E "s/UseSsl=.*/UseSsl=1/g" $ODBC_INI
-  sed -i -E "s/SSLCertFile=.*/SSLCertFile=$SSL_CERT_FILE/g" $ODBC_INI
-  #Setup ODBC Server GISFED INI
-  sed -i -E "s/UseSsl=.*/UseSsl=1/g" $GISFED_ODBC_INI
-  sed -i -E "s/SSLCertFile=.*/SSLCertFile=$SSL_CERT_FILE/g" $GISFED_ODBC_INI
-  sed -i -E "s/SslKeyFile=.*/SslKeyFile=$SSL_KEY_FILE/g" $GISFED_ODBC_INI
-
-  #HTTPD no auth conf
-   sed -i -E "s/#*SSLEngine.*/SSLEngine On/g" $HTTPD_NO_AUTH_CONF
-   sed -i -E "s/#*SSLCertificateFile.*/SSLCertificateFile $SSL_CERT_FILE/g" $HTTPD_NO_AUTH_CONF
-   sed -i -E "s/#*SSLCertificateKeyFile.*/SSLCertificateKeyFile $SSLCertificateFile/g" $HTTPD_NO_AUTH_CONF
-   sed -i -E "s/#*SSLProxyEngine.*/SSLEngine On/g" $HTTPD_NO_AUTH_CONF
-   sed -i -E "s/#*RequestHeader set X-Forwarded-Proto \"https\"/RequestHeader set X-Forwarded-Proto \"https\"/g" $HTTPD_NO_AUTH_CONF
-   
-   
-   
-
-
-  
-}
-
+azure(){
 log "------- prepareDrives.sh starting -------"
 #Debugging need to set this world writeable
 chmod 777 $LOG_FILE
 #set perms
+export SUDO_CMD="echo ${SSH_PASSWORD}|sudo -S "
+
+
 eval ${SUDO_CMD} chmod +x ./inputs2.sh
 #password is in cache. 
 sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
@@ -574,9 +608,41 @@ sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 log "------- prepareDrivess.sh succeeded -------"
 
 setupPersist
-getFirstNode 
+getFirstNode
 
+}
 
+awsSingleNode(){
+log "------- prepareDrives.sh starting -------"
+#Debugging need to set this world writeable
+chmod 777 $LOG_FILE
+log "AWS Installer"
+export SUDO_CMD="sudo "
+
+#set perms
+eval ${SUDO_CMD} chmod +x ./inputs2.sh
+sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
+
+log "------- prepareDrivess.sh succeeded -------"
+setupPersist
+getFirstNode
+eval ${SUDO_CMD}  systemctl gpudb enable
+}
+
+FIRST_NODE=""
+case "$CLOUD" in
+    AWS)
+    declare -i VMSS_NUM_LENGTH=0
+    FIRST_NODE=$( hostname -s )
+    awsSingleNode
+    ;;
+    AZURE)
+    #Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
+    FIRST_NODE=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
+    declare -i VMSS_NUM_LENGTH=6
+    azure
+    ;;
+esac
 
 
 # always `exit 0` on success
