@@ -638,8 +638,8 @@ case "$CLOUD" in
     ;;
     AZURE)
     #Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
-    FIRST_NODE=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
     declare -i VMSS_NUM_LENGTH=6
+    FIRST_NODE=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
     azure
     ;;
 esac
