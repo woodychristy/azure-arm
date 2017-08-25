@@ -108,16 +108,20 @@
             "sshNatBackEndPort": 22,
             "adminUiNatPoolName": "[concat(variables('namingInfix'), 'adminUiNatPool')]",
             "adminUiStartPort": 8080,
-            "adminUiEndPort": 8085,
+            "adminUiEndPort": 8180,
             "adminUiBackEndPort": 8080,
             "apiNatPoolName": "[concat(variables('namingInfix'), 'apiNatPool')]",
             "apiStartPort": 9191,
-            "apiEndPort": 9192,
+            "apiEndPort": 9290,
             "apiBackEndPort": 9191,
             "revealNatPoolName": "[concat(variables('namingInfix'), 'revealNatPool')]",
-            "revealStartPort": 8088,
-            "revealEndPort": 8089,
-            "revealBackEndPort": 8088
+            "revealStartPort": 8188,
+            "revealEndPort": 8288,
+            "revealBackEndPort": 8088,
+            "sqlNatPoolName": "[concat(variables('namingInfix'), 'sqlNatPool')]",
+            "sqlStartPort": 9292,
+            "sqlEndPort": 9392,
+            "sqlBackEndPort": 9191
         },
         "installKinetica": "[concat( parameters('scriptsUri'), 'installKinetica.sh')]",
         "singleQuote": "'"
@@ -153,7 +157,7 @@
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
                 "dnsSettings": {
-                  "domainNameLabel": "[parameters('publicIPAddressName')]"
+                    "domainNameLabel": "[parameters('publicIPAddressName')]"
                 }
             },
             "condition": "[parameters('publicIPAddressIsNew')]"
@@ -230,6 +234,18 @@
                             "frontendPortRangeStart": "[variables('networkSpec').revealStartPort]",
                             "frontendPortRangeEnd": "[variables('networkSpec').revealEndPort]",
                             "backendPort": "[variables('networkSpec').revealBackEndPort]"
+                        }
+                    },
+                    {
+                        "name": "[variables('networkSpec').sqlNatPoolName]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('networkSpec').frontEndIPConfigID]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPortRangeStart": "[variables('networkSpec').sqlStartPort]",
+                            "frontendPortRangeEnd": "[variables('networkSpec').sqlEndPort]",
+                            "backendPort": "[variables('networkSpec').sqlBackEndPort]"
                         }
                     }
                 ]
@@ -310,6 +326,9 @@
                                                     },
                                                     {
                                                         "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').revealNatPoolName)]"
+                                                    },
+                                                    {
+                                                        "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('networkSpec').loadBalancerName, '/inboundNatPools/', variables('networkSpec').sqlNatPoolName)]"
                                                     }
                                                 ]
                                             }
