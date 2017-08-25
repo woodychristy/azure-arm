@@ -121,7 +121,7 @@
             "sqlNatPoolName": "[concat(variables('namingInfix'), 'sqlNatPool')]",
             "sqlStartPort": 9292,
             "sqlEndPort": 9392,
-            "sqlBackEndPort": 9191
+            "sqlBackEndPort": 9292
         },
         "installKinetica": "[concat( parameters('scriptsUri'), 'installKinetica.sh')]",
         "singleQuote": "'"
