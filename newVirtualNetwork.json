@@ -289,7 +289,7 @@
                                 "createOption": "Empty"
                             }
                         ],
-                        "imageReference": "id": "[resourceId('Microsoft.Compute/images', 'centos74-kineticantos61')]"
+                        "imageReference": {"id": "[resourceId('Microsoft.Compute/images', 'centos74-kineticantos61')]"}
                     },
                     "osProfile": {
                         "computerNamePrefix": "[parameters('clusterName')]",
