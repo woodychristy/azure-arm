@@ -350,7 +350,7 @@
                                         ]
                                     },
                                     "protectedSettings": {
-                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).ipAddress,' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU'),' ',variables('singleQuote'),parameters('licenseKey'),variables('singleQuote'),' AZURE') ]"
+                                        "commandToExecute": "[concat('bash installKinetica.sh ',parameters('clusterName'),' ',parameters('clusterSize'),' ',reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('publicIPAddressName')),parameters('networkApiVersion')).dnsSettings.fqdn,' ',parameters('enableOdbcConnector'),' ',parameters('enableCaravel'),' ',parameters('enableKibana'),' ',parameters('adminUsername'),' ',variables('singleQuote'),parameters('adminPassword'),variables('singleQuote'),' ',parameters('vmSKU'),' ',variables('singleQuote'),parameters('licenseKey'),variables('singleQuote'),' AZURE') ]"
                                     },
                                     "typeHandlerVersion": "2.0",
                                     "autoUpgradeMinorVersion": true,
