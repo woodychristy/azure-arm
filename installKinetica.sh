@@ -587,6 +587,9 @@ log "------- prepareDrivess.sh succeeded -------"
 
 setupPersist
 getFirstNode
+
+#Tomcat doesn't always start after host_manager initializes.  The second start works
+eval ${SUDO_CMD} /etc/init.d/gpudb_host_manager restart
 eval ${SUDO_CMD} /etc/init.d/gpudb_host_manager restart
 eval ${SUDO_CMD} systemctl enable gpudb_host_manager
 }
