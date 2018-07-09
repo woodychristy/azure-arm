@@ -136,6 +136,11 @@ prepare_disk()
 
     echo "UUID=${blockid} $mount $FS defaults,noatime,discard,barrier=0 0 0" >> /etc/fstab
     mount ${mount}
+    
+    #Resize the file system to be the same as underlying disk
+    
+    echo "Resizing filesystem to take entire $device"
+    resize2fs ${device}
 
   fi
 }
@@ -356,6 +361,7 @@ setNumGPU(){
 setupPersist(){
   eval $SUDO_CMD mkdir -p /data0/gpudb/persist
   eval $SUDO_CMD chown -R gpudb:gpudb /data0/gpudb
+
 }
 
 
@@ -367,6 +373,7 @@ setupGPUDBConf(){
 
     sed -i -E "s/head_ip_address =.*/head_ip_address = ${FIRST_NODE}/g" $GPUDB_CONF_FILE
   else
+    HEAD_NODE_IP=host ${HEAD_NODE_IP} | awk '/has address/ { print $4 }'
     sed -i -E "s/head_ip_address =.*/head_ip_address = ${HEAD_NODE_IP}/g" $GPUDB_CONF_FILE
   fi
   sed -i -E "s/enable_caravel =.*/enable_caravel = ${ENABLE_CARAVEL}/g" $GPUDB_CONF_FILE
@@ -378,7 +385,7 @@ setupGPUDBConf(){
 
   declare -a HOST_NAMES
 
-
+ 
     i=0
      while read h; do
      HOST_NAMES[$i]=$h
@@ -554,39 +561,10 @@ getFirstNode(){
          log "Sleeping 30 seconds to ensure networks are up"
          sleep 30
        fi
-       if [[ "$CLOUD" == "AZURE"  ]]; then
-           log "------- sshUserSetup.sh starting -------"
-           touch /tmp/kinetica-ssh-setup.log
-           chmod 777 /tmp/kinetica-ssh-setup.log
-           eval ${SUDO_CMD} chmod +x /tmp/sshUserSetup.sh
-           sudo su $SSH_USER bash -c "/tmp/sshUserSetup.sh '$SSH_PASSWORD' $VM_NAME_PREFIX $NUM_VMS 2>&1>>/tmp/kinetica-ssh-setup.log" 2>&1>>$LOG_FILE
-           log "------- sshUserSetup.sh finished -------"
-       fi
-       if [[ "$CLOUD" == "AWS"  ]]; then
-           log "------- Creating Local GPUDB keys -------"
-log $SUDO_CMD
-
-eval ${SUDO_CMD} rm ~gpudb/.ssh/id_rsa*
-eval ${SUDO_CMD} ssh-keygen -t rsa -N \"\" -f ~gpudb/.ssh/id_rsa
-eval ${SUDO_CMD} cat ~gpudb/.ssh/id_rsa.pub >> ~gpudb/.ssh/authorized_keys
-eval ${SUDO_CMD} chown gpudb:gpudb ~gpudb/.ssh/*
-eval ${SUDO_CMD} chmod 600 ~gpudb/.ssh/*
-
-    # Make these hosts known to us, gets all public keys for all users.
-    KNOWN_HOST_STR=$(ssh-keyscan -t rsa `hostname -s`)
-    touch ~gpudb/.ssh/known_hosts
-    chown gpudb:gpudb ~gpudb/.ssh/known_hosts
-    if ! grep -F "$KNOWN_HOST_STR" ~gpudb/.ssh/known_hosts > /dev/null; then
-        echo "$KNOWN_HOST_STR" >> ~gpudb/.ssh/known_hosts
-    fi
-eval ${SUDO_CMD} chmod 600 ~gpudb/.ssh/*
 
 
-
-           log "------- Finished with Local GPUDB Keys -------"
-       fi
        setupGPUDBConf
-       eval ${SUDO_CMD} /etc/init.d/gpudb start
+
     else
        log "------- Not the first node exiting -------"
     fi
@@ -625,8 +603,10 @@ sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 
 log "------- prepareDrivess.sh succeeded -------"
 setupPersist
-getFirstNode
-eval ${SUDO_CMD}  systemctl gpudb enable
+#resize EBS persist volume
+ eval $SUD_CMD resize2fs /dev/xvdb
+
+
 }
 
 FIRST_NODE=""
@@ -638,8 +618,8 @@ case "$CLOUD" in
     ;;
     AZURE)
     #Azure specific host postfix for number VMNAMExxxxx where x would be length 6 replaced with 000000 for the first node and 999999 for the 1 millionth
-    FIRST_NODE=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
     declare -i VMSS_NUM_LENGTH=6
+    FIRST_NODE=$VM_NAME_PREFIX$(printf %0${VMSS_NUM_LENGTH}d 0)
     azure
     ;;
 esac
