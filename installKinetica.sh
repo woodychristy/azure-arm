@@ -370,10 +370,9 @@ setupGPUDBConf(){
 
   if [ "$HEAD_NODE_IP" == "USE_FIRST_NODE" ]
   then
-
     sed -i -E "s/head_ip_address =.*/head_ip_address = ${FIRST_NODE}/g" $GPUDB_CONF_FILE
   else
-    HEAD_NODE_IP=host ${HEAD_NODE_IP} | awk '/has address/ { print $4 }'
+    HEAD_NODE_IP=$(host ${HEAD_NODE_IP} | awk '/has address/ { print $4 }')
     sed -i -E "s/head_ip_address =.*/head_ip_address = ${HEAD_NODE_IP}/g" $GPUDB_CONF_FILE
   fi
   sed -i -E "s/enable_caravel =.*/enable_caravel = ${ENABLE_CARAVEL}/g" $GPUDB_CONF_FILE
