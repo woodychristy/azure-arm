@@ -587,7 +587,8 @@ log "------- prepareDrivess.sh succeeded -------"
 
 setupPersist
 getFirstNode
-
+eval ${SUDO_CMD} /etc/init.d/gpudb_host_manager restart
+eval ${SUDO_CMD} systemctl enable gpudb_host_manager
 }
 
 awsSingleNode(){
@@ -604,7 +605,7 @@ sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
 log "------- prepareDrivess.sh succeeded -------"
 setupPersist
 #resize EBS persist volume
- eval $SUD_CMD resize2fs /dev/xvdb
+ eval $SUDO_CMD resize2fs /dev/xvdb
 
 
 }
